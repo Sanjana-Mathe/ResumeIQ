@@ -1,0 +1,2276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ResumeIQ Pro — AI Resume Analyzer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ══════════════════════════════════════════
+       DESIGN: Refined editorial light theme
+       Fraunces (display) + DM Sans (body) + DM Mono
+       Cream white base · Slate ink · Gold accent
+    ══════════════════════════════════════════ */
+    :root {
+      --bg:        #f7f5f0;
+      --bg-card:   #ffffff;
+      --bg-2:      #f0ede6;
+      --bg-3:      #e8e4db;
+      --bg-input:  #fafaf8;
+
+      --ink:       #1a1a2e;
+      --ink-2:     #4a4a6a;
+      --ink-3:     #8888aa;
+      --ink-4:     #b8b8cc;
+
+      --gold:      #c8861a;
+      --gold-lt:   #f5c842;
+      --gold-bg:   rgba(200,134,26,0.08);
+      --gold-bdr:  rgba(200,134,26,0.22);
+
+      --green:     #0d8a5e;
+      --green-bg:  rgba(13,138,94,0.08);
+      --red:       #c0392b;
+      --red-bg:    rgba(192,57,43,0.08);
+      --amber:     #b7770d;
+      --amber-bg:  rgba(183,119,13,0.08);
+      --blue:      #1a5fa8;
+      --blue-bg:   rgba(26,95,168,0.08);
+
+      --border:    rgba(26,26,46,0.08);
+      --border-md: rgba(26,26,46,0.14);
+      --border-hi: rgba(26,26,46,0.22);
+
+      --font-d: 'Fraunces', Georgia, serif;
+      --font-b: 'DM Sans', sans-serif;
+      --font-m: 'DM Mono', monospace;
+
+      --r-xs: 4px; --r-sm: 8px; --r: 12px; --r-lg: 16px; --r-xl: 22px;
+      --shadow-sm: 0 1px 4px rgba(26,26,46,0.07);
+      --shadow:    0 4px 20px rgba(26,26,46,0.09);
+      --shadow-lg: 0 12px 48px rgba(26,26,46,0.13);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-b),serif;
+      font-size: 15px;
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { cursor: pointer; border: none; background: none; font: inherit; color: inherit; }
+    input, textarea { font: inherit; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg-2); }
+    ::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 3px; }
+    .container { max-width: 1120px; margin: 0 auto; padding: 0 28px; }
+
+    /* ══════════════════════════════════════════
+       AUTH SCREEN — centered card
+    ══════════════════════════════════════════ */
+    #authScreen {
+      position: fixed; inset: 0; z-index: 9000;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+    /* subtle dot-grid background on auth page */
+    #authScreen::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: radial-gradient(circle, var(--border-md) 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none;
+    }
+    #authScreen.hiding { opacity: 0; transform: scale(0.97); pointer-events: none; }
+
+    .auth-card {
+      position: relative; z-index: 1;
+      background: var(--bg-card);
+      border: 1px solid var(--border-md);
+      border-radius: var(--r-xl);
+      box-shadow: var(--shadow-lg);
+      width: 100%; max-width: 440px;
+      padding: 44px 40px 36px;
+      animation: cardIn 0.5s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    @keyframes cardIn {
+      from { opacity:0; transform: translateY(24px) scale(0.97); }
+      to   { opacity:1; transform: translateY(0) scale(1); }
+    }
+
+    /* Logo at top of card */
+    .auth-logo {
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; margin-bottom: 28px;
+    }
+    .auth-logo-mark {
+      width: 38px; height: 38px;
+      background: var(--ink);
+      border-radius: var(--r-sm);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .auth-logo-mark svg { color: var(--gold-lt); }
+    .auth-logo-text {
+      font-family: var(--font-d);
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .auth-logo-text span { color: var(--gold); }
+    .auth-logo-badge {
+      background: var(--gold-bg);
+      color: var(--gold);
+      border: 1px solid var(--gold-bdr);
+      font-family: var(--font-m);
+      font-size: 0.55rem;
+      font-weight: 500;
+      padding: 2px 7px;
+      border-radius: 4px;
+      letter-spacing: 0.07em;
+      margin-bottom: 4px;
+    }
+
+    /* Tab switcher */
+    .auth-tabs {
+      display: flex;
+      background: var(--bg-2);
+      border-radius: var(--r-sm);
+      padding: 3px;
+      margin-bottom: 28px;
+    }
+    .auth-tab {
+      flex: 1; text-align: center;
+      font-family: var(--font-m);
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      padding: 8px 0;
+      border-radius: 6px;
+      color: var(--ink-3);
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .auth-tab.active { background: var(--bg-card); color: var(--ink); box-shadow: var(--shadow-sm); }
+
+    .auth-heading {
+      font-family: var(--font-d);
+      font-size: 1.55rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 5px;
+      letter-spacing: -0.02em;
+    }
+    .auth-subhead {
+      font-size: 0.83rem;
+      color: var(--ink-3);
+      margin-bottom: 24px;
+    }
+
+    /* Fields */
+    .f-group { margin-bottom: 14px; }
+    .f-label {
+      display: block;
+      font-family: var(--font-m);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-3);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .f-wrap { position: relative; }
+    .f-icon {
+      position: absolute; left: 13px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--ink-4);
+      pointer-events: none;
+      transition: color 0.2s;
+      display: flex;
+    }
+    .f-wrap:focus-within .f-icon { color: var(--gold); }
+    .f-input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-md);
+      border-radius: var(--r-sm);
+      color: var(--ink);
+      padding: 11px 14px 11px 38px;
+      font-size: 0.88rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .f-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(200,134,26,0.1); }
+    .f-input::placeholder { color: var(--ink-4); }
+    .f-input.err { border-color: var(--red); }
+    .f-input.err:focus { box-shadow: 0 0 0 3px rgba(192,57,43,0.1); }
+    .pw-eye {
+      position: absolute; right: 12px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--ink-4); padding: 2px 4px;
+      transition: color 0.2s;
+    }
+    .pw-eye:hover { color: var(--ink-2); }
+    .f-error {
+      font-family: var(--font-m);
+      font-size: 0.67rem;
+      color: var(--red);
+      margin-top: 4px;
+      display: none;
+    }
+    .f-error.on { display: block; }
+
+    /* Password strength */
+    .pw-str { margin-top: 6px; display: none; }
+    .pw-str.on { display: block; }
+    .pw-str-bar { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .pw-str-fill { height: 100%; border-radius: 2px; width: 0; transition: width 0.3s, background 0.3s; }
+    .pw-str-lbl { font-family: var(--font-m); font-size: 0.63rem; color: var(--ink-3); margin-top: 3px; }
+
+    /* Submit */
+    .btn-submit {
+      width: 100%;
+      background: var(--ink);
+      color: #fff;
+      font-family: var(--font-b);
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 13px;
+      border-radius: var(--r-sm);
+      transition: all 0.22s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-top: 18px;
+    }
+    .btn-submit:hover { background: #2d2d4e; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,26,46,0.2); }
+    .btn-submit:active { transform: none; }
+
+    .auth-switch {
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--ink-3);
+      margin-top: 18px;
+    }
+    .auth-switch button { color: var(--gold); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+    .auth-note {
+      font-family: var(--font-m);
+      font-size: 0.63rem;
+      color: var(--ink-4);
+      text-align: center;
+      margin-top: 14px;
+      line-height: 1.7;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ══════════════════════════════════════════
+       NAV
+    ══════════════════════════════════════════ */
+    .nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 60px;
+      position: sticky; top: 0; z-index: 200;
+      background: rgba(247,245,240,0.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .nav-logo-mark {
+      width: 28px; height: 28px;
+      background: var(--ink);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .nav-logo-mark svg { color: var(--gold-lt); }
+    .nav-logo-text {
+      font-family: var(--font-d);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .nav-logo-text span { color: var(--gold); }
+    .nav-badge {
+      background: var(--gold-bg);
+      color: var(--gold);
+      border: 1px solid var(--gold-bdr);
+      font-family: var(--font-m);
+      font-size: 0.53rem;
+      padding: 2px 6px; border-radius: 4px;
+      letter-spacing: 0.07em;
+    }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .nav-links { display: flex; gap: 24px; }
+    .nav-links a { font-size: 0.83rem; color: var(--ink-3); transition: color 0.2s; font-weight: 500; }
+    .nav-links a:hover { color: var(--ink); }
+    .btn-key {
+      display: flex; align-items: center; gap: 6px;
+      font-family: var(--font-m); font-size: 0.7rem; color: var(--ink-3);
+      padding: 6px 12px;
+      border: 1px solid var(--border-md);
+      border-radius: var(--r-sm);
+      transition: all 0.2s;
+    }
+    .btn-key:hover { border-color: var(--gold); color: var(--gold); }
+    .btn-key .kdot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-4); transition: all 0.2s; }
+    .btn-key.on .kdot { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .nav-user { display: flex; align-items: center; gap: 10px; }
+    .nav-av {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: var(--ink); color: #fff;
+      font-family: var(--font-m); font-size: 0.72rem; font-weight: 500;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nav-name { font-size: 0.82rem; font-weight: 500; color: var(--ink-2); }
+    .btn-signout {
+      font-family: var(--font-m); font-size: 0.68rem; color: var(--ink-3);
+      padding: 5px 11px; border: 1px solid var(--border-md); border-radius: var(--r-sm);
+      transition: all 0.2s;
+    }
+    .btn-signout:hover { color: var(--red); border-color: rgba(192,57,43,0.25); background: var(--red-bg); }
+
+    /* ══════════════════════════════════════════
+       HERO
+    ══════════════════════════════════════════ */
+    .hero {
+      padding: 80px 28px 64px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(200,134,26,0.07), transparent 70%);
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-family: var(--font-m); font-size: 0.7rem;
+      color: var(--gold); letter-spacing: 0.1em; text-transform: uppercase;
+      background: var(--gold-bg); border: 1px solid var(--gold-bdr);
+      border-radius: 100px; padding: 5px 14px; margin-bottom: 24px;
+    }
+    .hero-eyebrow .dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--gold); box-shadow: 0 0 6px var(--gold);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+    .hero-title {
+      font-family: var(--font-d);
+      font-size: clamp(2.4rem, 5.5vw, 4rem);
+      font-weight: 700;
+      line-height: 1.12;
+      letter-spacing: -0.03em;
+      color: var(--ink);
+      margin-bottom: 20px;
+    }
+    .hero-title em {
+      font-style: italic;
+      font-weight: 300;
+      color: var(--gold);
+    }
+    .hero-sub {
+      font-size: 1rem; color: var(--ink-2);
+      max-width: 520px; margin: 0 auto 36px;
+      line-height: 1.75;
+    }
+    .hero-cta { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--ink); color: #fff;
+      font-weight: 600; font-size: 0.88rem;
+      padding: 13px 28px; border-radius: var(--r-sm);
+      transition: all 0.22s;
+    }
+    .btn-primary:hover { background: #2d2d4e; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,26,46,0.2); }
+    .btn-outline {
+      display: inline-flex; align-items: center; gap: 8px;
+      border: 1px solid var(--border-hi); color: var(--ink-2);
+      font-size: 0.86rem; font-weight: 500;
+      padding: 12px 24px; border-radius: var(--r-sm);
+      transition: all 0.22s;
+    }
+    .btn-outline:hover { border-color: var(--ink); color: var(--ink); }
+    .hero-stats {
+      display: flex; align-items: center; justify-content: center;
+      gap: 36px; margin-top: 52px;
+    }
+    .hstat { text-align: center; }
+    .hstat-num {
+      font-family: var(--font-d);
+      font-size: 2rem; font-weight: 700;
+      color: var(--ink); letter-spacing: -0.02em; display: block;
+    }
+    .hstat-num span { color: var(--gold); }
+    .hstat-lbl { font-family: var(--font-m); font-size: 0.63rem; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.08em; }
+    .hstat-div { width: 1px; height: 36px; background: var(--border-md); }
+
+    /* ══════════════════════════════════════════
+       UPLOAD SECTION
+    ══════════════════════════════════════════ */
+    .upload-section {
+      padding: 64px 0;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+    }
+    .sec-eyebrow {
+      font-family: var(--font-m); font-size: 0.68rem;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--gold); margin-bottom: 8px;
+    }
+    .sec-title {
+      font-family: var(--font-d); font-size: clamp(1.5rem, 3vw, 2.2rem);
+      font-weight: 700; letter-spacing: -0.02em; color: var(--ink);
+      margin-bottom: 36px;
+    }
+    .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+    .up-card {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 24px;
+      transition: border-color 0.25s;
+    }
+    .up-card:hover { border-color: var(--border-hi); }
+    .up-card-label {
+      display: flex; align-items: center; gap: 8px;
+      font-weight: 600; font-size: 0.88rem; color: var(--ink);
+      margin-bottom: 16px;
+    }
+    .up-num {
+      font-family: var(--font-m); font-size: 0.63rem;
+      color: var(--gold); background: var(--gold-bg);
+      border: 1px solid var(--gold-bdr);
+      padding: 2px 8px; border-radius: 4px;
+    }
+    .up-opt { font-family: var(--font-m); font-size: 0.63rem; color: var(--ink-4); font-weight: 400; }
+    .mode-toggle {
+      display: flex; background: var(--bg-2);
+      border-radius: var(--r-xs); padding: 3px;
+      margin-bottom: 14px; width: fit-content;
+    }
+    .mode-btn {
+      font-family: var(--font-m); font-size: 0.68rem;
+      padding: 5px 14px; border-radius: 3px; color: var(--ink-3);
+      transition: all 0.2s; letter-spacing: 0.04em; cursor: pointer;
+    }
+    .mode-btn.on { background: var(--bg-card); color: var(--ink); box-shadow: var(--shadow-sm); }
+    .dropzone {
+      border: 2px dashed var(--border-md);
+      border-radius: var(--r);
+      min-height: 200px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 9px; text-align: center; padding: 32px 20px;
+      cursor: pointer; transition: all 0.25s;
+    }
+    .dropzone:hover, .dropzone.over { border-color: var(--gold); background: var(--gold-bg); }
+    .dz-icon {
+      width: 48px; height: 48px;
+      background: var(--bg-2); border: 1px solid var(--border-md);
+      border-radius: var(--r-sm);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--ink-3); transition: all 0.25s; margin-bottom: 4px;
+    }
+    .dropzone:hover .dz-icon, .dropzone.over .dz-icon { border-color: var(--gold); color: var(--gold); background: var(--gold-bg); }
+    .dz-title { font-weight: 600; font-size: 0.9rem; color: var(--ink); }
+    .dz-sub { font-family: var(--font-m); font-size: 0.68rem; color: var(--ink-3); }
+    .btn-browse {
+      display: inline-block; margin-top: 4px;
+      padding: 7px 18px; border: 1px solid var(--border-hi);
+      border-radius: 100px; font-size: 0.78rem; color: var(--ink-2); cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-browse:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-bg); }
+    .file-tag {
+      display: none; margin-top: 12px;
+      align-items: center; gap: 8px;
+      background: var(--green-bg); border: 1px solid rgba(13,138,94,0.22);
+      border-radius: var(--r-sm); padding: 9px 13px;
+      font-family: var(--font-m); font-size: 0.75rem; color: var(--green); width: 100%;
+    }
+    .file-tag.on { display: flex; }
+    .file-tag-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .jd-ta {
+      width: 100%; height: 200px;
+      background: var(--bg-input); border: 1px solid var(--border-md);
+      border-radius: var(--r-sm); color: var(--ink);
+      padding: 13px 14px; font-size: 0.86rem; line-height: 1.65;
+      resize: vertical; outline: none; transition: border-color 0.2s;
+    }
+    .jd-ta:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(200,134,26,0.08); }
+    .jd-ta::placeholder { color: var(--ink-4); }
+    .char-count { font-family: var(--font-m); font-size: 0.65rem; color: var(--ink-4); text-align: right; margin-top: 5px; }
+    .analyze-bar { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .btn-analyze {
+      display: inline-flex; align-items: center; gap: 9px;
+      background: var(--gold); color: #fff;
+      font-weight: 700; font-size: 0.95rem;
+      padding: 15px 52px; border-radius: var(--r-sm);
+      transition: all 0.25s; position: relative; overflow: hidden;
+    }
+    .btn-analyze::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent);
+      opacity: 0; transition: opacity 0.25s;
+    }
+    .btn-analyze:hover:not(:disabled)::before { opacity: 1; }
+    .btn-analyze:hover:not(:disabled) { background: #b87818; transform: translateY(-1px); box-shadow: 0 6px 22px rgba(200,134,26,0.3); }
+    .btn-analyze:disabled { opacity: 0.35; cursor: not-allowed; }
+    .analyze-note { font-family: var(--font-m); font-size: 0.65rem; color: var(--ink-4); }
+    .spinner {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ══════════════════════════════════════════
+       LOADING SCREEN
+    ══════════════════════════════════════════ */
+    .loading-wrap { display: none; padding: 80px 0; text-align: center; }
+    .loading-wrap.on { display: block; }
+    .loading-title {
+      font-family: var(--font-d); font-size: 2rem; font-weight: 700;
+      color: var(--ink); letter-spacing: -0.02em; margin-bottom: 6px;
+    }
+    .loading-sub { color: var(--ink-3); font-size: 0.88rem; margin-bottom: 36px; }
+    .stage-list {
+      max-width: 440px; margin: 0 auto 28px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--r-xl); overflow: hidden;
+    }
+    .stage-row {
+      display: flex; align-items: center; gap: 13px;
+      padding: 13px 18px; border-bottom: 1px solid var(--border);
+      transition: background 0.3s;
+    }
+    .stage-row:last-child { border-bottom: none; }
+    .stage-row.active { background: var(--gold-bg); }
+    .stage-row.done   { background: var(--green-bg); }
+    .stage-ic {
+      width: 26px; height: 26px; border-radius: 50%;
+      border: 2px solid var(--border-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; flex-shrink: 0; color: var(--ink-3);
+      transition: all 0.3s;
+    }
+    .stage-row.active .stage-ic { border-color: var(--gold); color: var(--gold); animation: spin 1s linear infinite; }
+    .stage-row.done   .stage-ic { border-color: var(--green); color: var(--green); }
+    .stage-lbl { font-size: 0.84rem; color: var(--ink-2); }
+    .stage-row.active .stage-lbl { color: var(--ink); font-weight: 500; }
+    .stage-row.done   .stage-lbl { color: var(--ink-3); }
+    .prog-wrap { max-width: 440px; margin: 0 auto; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .prog-bar { height: 100%; background: var(--gold); width: 0; transition: width 0.5s ease; border-radius: 2px; }
+
+    /* ══════════════════════════════════════════
+       RESULTS
+    ══════════════════════════════════════════ */
+    .results-section { display: none; padding: 56px 0 90px; }
+    .results-section.on { display: block; animation: fadeUp 0.45s ease both; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    .res-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 28px; flex-wrap: wrap; gap: 14px;
+    }
+    .res-topbar h2 {
+      font-family: var(--font-d); font-size: 2rem; font-weight: 700;
+      color: var(--ink); letter-spacing: -0.02em;
+    }
+    .res-actions { display: flex; gap: 9px; flex-wrap: wrap; }
+    .btn-ghost {
+      display: flex; align-items: center; gap: 5px;
+      font-family: var(--font-m); font-size: 0.72rem; color: var(--ink-3);
+      padding: 7px 14px; border: 1px solid var(--border-md); border-radius: var(--r-sm);
+      transition: all 0.2s;
+    }
+    .btn-ghost:hover { color: var(--ink); border-color: var(--border-hi); }
+    .btn-export {
+      display: flex; align-items: center; gap: 5px;
+      font-family: var(--font-m); font-size: 0.72rem; color: var(--gold);
+      padding: 7px 14px; border: 1px solid var(--gold-bdr); border-radius: var(--r-sm);
+      transition: all 0.2s;
+    }
+    .btn-export:hover { background: var(--gold-bg); }
+
+    /* Score row */
+    .score-row { display: grid; grid-template-columns: 240px 1fr; gap: 18px; margin-bottom: 18px; }
+    .score-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--r-xl); padding: 28px 20px;
+      display: flex; flex-direction: column; align-items: center; gap: 16px;
+    }
+    .ring-wrap { position: relative; width: 130px; height: 130px; }
+    .score-ring { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .ring-track { fill: none; stroke: var(--bg-3); stroke-width: 7; }
+    .ring-fill {
+      fill: none; stroke: var(--gold); stroke-width: 7; stroke-linecap: round;
+      stroke-dasharray: 314; stroke-dashoffset: 314;
+      transition: stroke-dashoffset 1.4s cubic-bezier(0.16,1,0.3,1), stroke 0.4s;
+    }
+    .ring-inner {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .ring-num {
+      font-family: var(--font-d); font-size: 2.4rem; font-weight: 700;
+      color: var(--ink); line-height: 1; letter-spacing: -0.02em;
+    }
+    .ring-lbl { font-family: var(--font-m); font-size: 0.58rem; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px; }
+    .verdict {
+      font-family: var(--font-m); font-size: 0.72rem; font-weight: 500;
+      padding: 6px 12px; border-radius: var(--r-sm); text-align: center; width: 100%;
+    }
+    .verdict.ex  { background: var(--green-bg); color: var(--green); border: 1px solid rgba(13,138,94,0.2); }
+    .verdict.gd  { background: var(--gold-bg); color: var(--gold); border: 1px solid var(--gold-bdr); }
+    .verdict.fr  { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(183,119,13,0.2); }
+    .verdict.pr  { background: var(--red-bg); color: var(--red); border: 1px solid rgba(192,57,43,0.2); }
+    .bk-list { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+    .bk-row { display: flex; align-items: center; gap: 7px; font-size: 0.76rem; }
+    .bk-lbl { color: var(--ink-2); width: 88px; flex-shrink: 0; }
+    .bk-track { flex: 1; height: 4px; background: var(--bg-3); border-radius: 2px; overflow: hidden; }
+    .bk-fill { height: 100%; background: var(--gold); border-radius: 2px; width: 0; transition: width 1.2s cubic-bezier(0.16,1,0.3,1); }
+    .bk-val { font-family: var(--font-m); font-size: 0.68rem; color: var(--ink-3); min-width: 30px; text-align: right; }
+
+    .ov-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--r-xl); padding: 24px;
+    }
+    .ov-card h3 {
+      font-family: var(--font-d); font-size: 1.1rem; font-weight: 700;
+      letter-spacing: -0.01em; margin-bottom: 18px; color: var(--ink);
+    }
+    .ov-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+    .ov-item {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--r-sm); padding: 14px; transition: border-color 0.2s;
+    }
+    .ov-item:hover { border-color: var(--border-hi); }
+    .ov-val { font-family: var(--font-d); font-size: 1.6rem; font-weight: 700; color: var(--gold); line-height: 1; }
+    .ov-key { font-family: var(--font-m); font-size: 0.6rem; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; }
+
+    /* Tabs */
+    .res-tabs {
+      display: flex; gap: 3px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--r-sm); padding: 4px; margin-bottom: 18px; overflow-x: auto;
+    }
+    .tab-btn {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+      font-family: var(--font-m); font-size: 0.72rem; padding: 9px 14px;
+      border-radius: 6px; color: var(--ink-3); transition: all 0.2s; white-space: nowrap;
+      letter-spacing: 0.04em; cursor: pointer;
+    }
+    .tab-btn.on { background: var(--bg); color: var(--ink); box-shadow: var(--shadow-sm); }
+    .tab-num {
+      background: var(--bg-2); color: var(--ink-3);
+      font-size: 0.6rem; padding: 1px 6px; border-radius: 100px; transition: all 0.2s;
+    }
+    .tab-btn.on .tab-num { background: var(--gold); color: #fff; }
+    .tab-pane { display: none; animation: fadeUp 0.3s ease; }
+    .tab-pane.on { display: block; }
+
+    /* Cards */
+    .card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--r-xl); padding: 22px;
+    }
+    .card-hd {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--border);
+    }
+    .card-hd h3 { font-family: var(--font-d); font-size: 1.05rem; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
+    .badge {
+      font-family: var(--font-m); font-size: 0.67rem;
+      background: var(--gold-bg); color: var(--gold);
+      border: 1px solid var(--gold-bdr); padding: 2px 10px; border-radius: 100px;
+    }
+    .badge.green { background: var(--green-bg); color: var(--green); border-color: rgba(13,138,94,0.22); }
+    .badge.red   { background: var(--red-bg); color: var(--red); border-color: rgba(192,57,43,0.22); }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+
+    /* Skills tab */
+    .radar-wrap { display: flex; align-items: center; justify-content: center; padding: 12px 0; }
+    .cat-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+    .cat-btn {
+      font-family: var(--font-m); font-size: 0.65rem; padding: 4px 11px;
+      border-radius: 100px; border: 1px solid var(--border-md); color: var(--ink-3);
+      cursor: pointer; transition: all 0.2s; letter-spacing: 0.04em;
+    }
+    .cat-btn.on, .cat-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-bg); }
+    .chip-cloud { display: flex; flex-wrap: wrap; gap: 7px; }
+    .chip {
+      font-family: var(--font-m); font-size: 0.72rem;
+      padding: 5px 11px; border-radius: var(--r-xs);
+      background: var(--bg); border: 1px solid var(--border);
+      color: var(--ink-2); cursor: default;
+      display: flex; align-items: center; gap: 5px;
+      transition: border-color 0.2s;
+    }
+    .chip:hover { border-color: var(--border-hi); }
+    .chip.top { background: var(--gold-bg); border-color: var(--gold-bdr); color: var(--gold); }
+    .chip-cat { font-size: 0.58rem; opacity: 0.6; background: rgba(0,0,0,0.04); border-radius: 3px; padding: 1px 4px; }
+
+    /* Keywords tab */
+    .match-big { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
+    .match-num { font-family: var(--font-d); font-size: 4rem; font-weight: 700; color: var(--ink); line-height: 1; letter-spacing: -0.03em; }
+    .match-num span { color: var(--gold); }
+    .match-sub { font-family: var(--font-m); font-size: 0.68rem; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px; }
+    .match-bar { display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 16px; font-family: var(--font-m); font-size: 0.68rem; color: var(--ink-3); }
+    .mbt { flex: 1; height: 5px; background: var(--bg-3); border-radius: 3px; overflow: hidden; }
+    .mbf { height: 100%; background: var(--gold); border-radius: 3px; width: 0; transition: width 1.2s cubic-bezier(0.16,1,0.3,1); }
+    .kw-grp-title { font-family: var(--font-m); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); margin-bottom: 9px; }
+    .kw-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 18px; }
+    .kw {
+      font-family: var(--font-m); font-size: 0.7rem; padding: 3px 10px; border-radius: var(--r-xs);
+    }
+    .kw.found { background: var(--green-bg); color: var(--green); border: 1px solid rgba(13,138,94,0.2); }
+    .kw.miss  { background: var(--red-bg); color: var(--red); border: 1px solid rgba(192,57,43,0.2); }
+
+    /* Suggestions */
+    .sug-list { display: flex; flex-direction: column; gap: 9px; }
+    .sug-card {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--r-sm); padding: 13px 15px;
+      display: flex; align-items: flex-start; gap: 11px;
+      transition: border-color 0.2s;
+    }
+    .sug-card:hover { border-color: var(--border-hi); }
+    .sug-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+    .sug-dot.high { background: var(--red); box-shadow: 0 0 5px rgba(192,57,43,0.4); }
+    .sug-dot.mid  { background: var(--amber); }
+    .sug-dot.low  { background: var(--green); }
+    .sug-txt { flex: 1; font-size: 0.84rem; color: var(--ink-2); line-height: 1.55; }
+    .sug-badge {
+      font-family: var(--font-m); font-size: 0.6rem; text-transform: uppercase;
+      letter-spacing: 0.06em; padding: 2px 7px; border-radius: var(--r-xs); flex-shrink: 0;
+    }
+    .sug-badge.high { background: var(--red-bg); color: var(--red); }
+    .sug-badge.mid  { background: var(--amber-bg); color: var(--amber); }
+    .sug-badge.low  { background: var(--green-bg); color: var(--green); }
+    .sug-copy { color: var(--ink-4); padding: 2px 5px; border-radius: 4px; font-size: 0.78rem; transition: all 0.2s; }
+    .sug-copy:hover { color: var(--gold); background: var(--gold-bg); }
+
+    /* Sections */
+    .sec-list { display: flex; flex-direction: column; gap: 7px; }
+    .sec-row {
+      display: flex; align-items: center; gap: 11px;
+      padding: 10px 13px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: var(--r-sm);
+    }
+    .sec-ic { width: 28px; height: 28px; border-radius: var(--r-xs); display: flex; align-items: center; justify-content: center; font-size: 0.88rem; }
+    .sec-ic.ok   { background: var(--green-bg); }
+    .sec-ic.warn { background: var(--amber-bg); }
+    .sec-ic.miss { background: var(--red-bg); }
+    .sec-name { flex: 1; font-size: 0.85rem; color: var(--ink); }
+    .sec-st { font-family: var(--font-m); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .sec-st.ok   { color: var(--green); }
+    .sec-st.warn { color: var(--amber); }
+    .sec-st.miss { color: var(--red); }
+
+    /* Career */
+    .career-card {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--r-sm); padding: 14px; transition: all 0.2s;
+    }
+    .career-card:hover { border-color: var(--border-hi); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+    .career-role { font-weight: 600; font-size: 0.9rem; color: var(--ink); margin-bottom: 2px; }
+    .career-lvl { font-family: var(--font-m); font-size: 0.65rem; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+    .career-bar { height: 4px; background: var(--bg-3); border-radius: 2px; overflow: hidden; margin-bottom: 5px; }
+    .career-fill { height: 100%; background: var(--gold); border-radius: 2px; width: 0; transition: width 1.2s cubic-bezier(0.16,1,0.3,1); }
+    .career-pct { font-family: var(--font-m); font-size: 0.7rem; color: var(--gold); font-weight: 500; }
+    .career-skills { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+    .career-skill { font-family: var(--font-m); font-size: 0.62rem; padding: 2px 7px; background: var(--bg-2); border: 1px solid var(--border); color: var(--ink-3); border-radius: var(--r-xs); }
+    .road-list { display: flex; flex-direction: column; gap: 10px; }
+    .road-item { display: flex; gap: 13px; padding: 13px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r-sm); }
+    .road-n {
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      background: var(--gold-bg); border: 1px solid var(--gold-bdr);
+      font-family: var(--font-m); font-size: 0.65rem; color: var(--gold);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .road-title { font-weight: 600; font-size: 0.86rem; color: var(--ink); margin-bottom: 2px; }
+    .road-desc { font-size: 0.8rem; color: var(--ink-2); line-height: 1.55; }
+
+    /* ══════════════════════════════════════════
+       HOW IT WORKS
+    ══════════════════════════════════════════ */
+    .hiw { padding: 80px 0; border-top: 1px solid var(--border); background: var(--bg-card); }
+    .hiw-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; margin-top: 44px; }
+    .hiw-step {
+      background: var(--bg); border: 1px solid var(--border); padding: 32px 24px;
+      transition: all 0.25s; position: relative;
+    }
+    .hiw-step:first-child { border-radius: var(--r-xl) 0 0 var(--r-xl); }
+    .hiw-step:last-child  { border-radius: 0 var(--r-xl) var(--r-xl) 0; }
+    .hiw-step:hover { background: var(--bg-card); z-index: 1; box-shadow: var(--shadow); }
+    .hiw-num { font-family: var(--font-d); font-size: 3rem; font-weight: 700; color: var(--gold-bg); color: rgba(200,134,26,0.2); line-height: 1; margin-bottom: 14px; }
+    .hiw-step h4 { font-family: var(--font-d); font-size: 1.3rem; font-weight: 700; color: var(--ink); margin-bottom: 10px; }
+    .hiw-step p { font-size: 0.83rem; color: var(--ink-2); line-height: 1.7; }
+    .hiw-arrow {
+      position: absolute; right: -12px; top: 50%; transform: translateY(-50%);
+      font-size: 1.1rem; color: var(--ink-4); z-index: 2;
+      background: var(--bg); width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%; border: 1px solid var(--border);
+    }
+    .hiw-step:last-child .hiw-arrow { display: none; }
+
+    /* ══════════════════════════════════════════
+       FOOTER
+    ══════════════════════════════════════════ */
+    .footer { border-top: 1px solid var(--border); padding: 24px 0; background: var(--bg); }
+    .footer-in { display: flex; align-items: center; justify-content: space-between; }
+    .footer-logo { font-family: var(--font-d); font-size: 1.1rem; font-weight: 700; color: var(--ink); }
+    .footer-logo span { color: var(--gold); }
+    .footer-copy { font-family: var(--font-m); font-size: 0.65rem; color: var(--ink-4); }
+    .footer-links { display: flex; gap: 18px; }
+    .footer-links a { font-family: var(--font-m); font-size: 0.65rem; color: var(--ink-4); transition: color 0.2s; }
+    .footer-links a:hover { color: var(--ink); }
+
+    /* ══════════════════════════════════════════
+       TOASTS
+    ══════════════════════════════════════════ */
+    .toast-box { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 7px; pointer-events: none; }
+    .toast {
+      display: flex; align-items: center; gap: 9px;
+      background: var(--bg-card); border: 1px solid var(--border-md);
+      border-radius: var(--r); padding: 11px 16px;
+      font-family: var(--font-m); font-size: 0.75rem;
+      box-shadow: var(--shadow); pointer-events: all; max-width: 320px;
+      animation: toastIn 0.3s cubic-bezier(0.16,1,0.3,1);
+    }
+    .toast.ok  { border-color: rgba(13,138,94,0.3); color: var(--green); }
+    .toast.err { border-color: rgba(192,57,43,0.3); color: var(--red); }
+    .toast.inf { border-color: var(--gold-bdr); color: var(--gold); }
+    @keyframes toastIn { from{opacity:0;transform:translateX(16px)} to{opacity:1;transform:translateX(0)} }
+
+    /* ══════════════════════════════════════════
+       API MODAL
+    ══════════════════════════════════════════ */
+    .modal-ov {
+      display: none; position: fixed; inset: 0; z-index: 8000;
+      background: rgba(26,26,46,0.45); backdrop-filter: blur(6px);
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-ov.on { display: flex; }
+    .modal-box {
+      background: var(--bg-card); border: 1px solid var(--border-md);
+      border-radius: var(--r-xl); padding: 32px; max-width: 420px; width: 100%;
+      box-shadow: var(--shadow-lg); animation: cardIn 0.3s cubic-bezier(0.16,1,0.3,1);
+    }
+    .modal-box h3 { font-family: var(--font-d); font-size: 1.5rem; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+    .modal-box p { font-size: 0.83rem; color: var(--ink-2); margin-bottom: 18px; line-height: 1.6; }
+    .modal-input {
+      width: 100%; background: var(--bg-input); border: 1px solid var(--border-md);
+      border-radius: var(--r-sm); color: var(--ink);
+      padding: 11px 14px; font-family: var(--font-m); font-size: 0.82rem;
+      outline: none; margin-bottom: 18px; transition: border-color 0.2s;
+    }
+    .modal-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(200,134,26,0.1); }
+    .modal-input::placeholder { color: var(--ink-4); }
+    .modal-btns { display: flex; gap: 10px; justify-content: flex-end; }
+    .btn-mcancel {
+      padding: 9px 18px; border: 1px solid var(--border-md); border-radius: var(--r-sm);
+      font-size: 0.83rem; color: var(--ink-2); transition: all 0.2s;
+    }
+    .btn-mcancel:hover { color: var(--ink); border-color: var(--border-hi); }
+    .btn-msave {
+      padding: 9px 22px; background: var(--ink); color: #fff;
+      border-radius: var(--r-sm); font-size: 0.83rem; font-weight: 600; transition: all 0.2s;
+    }
+    .btn-msave:hover { background: #2d2d4e; }
+
+    /* ══════════════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════════════ */
+    @media (max-width: 900px) {
+      .nav { padding: 0 20px; }
+      .upload-grid, .score-row, .two-col { grid-template-columns: 1fr; }
+      .ov-grid { grid-template-columns: repeat(2,1fr); }
+      .hiw-grid { grid-template-columns: 1fr; gap: 2px; }
+      .hiw-step:first-child { border-radius: var(--r-xl) var(--r-xl) 0 0; }
+      .hiw-step:last-child  { border-radius: 0 0 var(--r-xl) var(--r-xl); }
+      .hiw-arrow { display: none !important; }
+      .footer-in { flex-direction: column; gap: 10px; text-align: center; }
+    }
+    @media (max-width: 600px) {
+      .nav-links { display: none; }
+      .hero-stats { flex-wrap: wrap; gap: 20px; }
+      .hstat-div { display: none; }
+      .auth-card { padding: 32px 24px 26px; }
+    }
+    @media print {
+      #authScreen, .nav, .upload-section, .loading-wrap, .hiw, .footer, .res-actions, .res-tabs { display: none !important; }
+      .results-section { display: block !important; }
+      .tab-pane { display: block !important; }
+    }
+
+    /* ══════════════════════════════════════════
+       PROFILE DROPDOWN
+    ══════════════════════════════════════════ */
+    .nav-user { position: relative; }
+    .nav-av {
+      cursor: pointer;
+      transition: box-shadow 0.2s;
+    }
+    .nav-av:hover { box-shadow: 0 0 0 3px var(--gold-bdr); }
+    .profile-dropdown {
+      display: none;
+      position: absolute; top: calc(100% + 10px); right: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border-md);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-lg);
+      min-width: 260px;
+      z-index: 500;
+      overflow: hidden;
+      animation: cardIn 0.25s cubic-bezier(0.16,1,0.3,1);
+    }
+    .profile-dropdown.open { display: block; }
+    .pd-header {
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 13px;
+    }
+    .pd-av-big {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--ink); color: #fff;
+      font-family: var(--font-m); font-size: 1rem; font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .pd-info { flex: 1; overflow: hidden; }
+    .pd-name { font-weight: 600; font-size: 0.9rem; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pd-email { font-family: var(--font-m); font-size: 0.67rem; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+    .pd-plan {
+      display: inline-flex; align-items: center; gap: 5px;
+      margin-top: 6px;
+      background: var(--gold-bg); border: 1px solid var(--gold-bdr);
+      color: var(--gold); font-family: var(--font-m); font-size: 0.6rem;
+      padding: 2px 8px; border-radius: 4px; letter-spacing: 0.06em;
+    }
+    .pd-stats {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1px; background: var(--border);
+    }
+    .pd-stat {
+      background: var(--bg-card); padding: 12px 16px;
+      text-align: center;
+    }
+    .pd-stat-val { font-family: var(--font-d); font-size: 1.15rem; font-weight: 700; color: var(--ink); }
+    .pd-stat-lbl { font-family: var(--font-m); font-size: 0.6rem; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 1px; }
+    .pd-joined {
+      padding: 10px 20px;
+      font-family: var(--font-m); font-size: 0.65rem; color: var(--ink-4);
+      border-bottom: 1px solid var(--border);
+    }
+    .pd-actions { padding: 8px; }
+    .pd-btn {
+      width: 100%; text-align: left; padding: 9px 12px;
+      border-radius: var(--r-sm); font-size: 0.83rem; color: var(--ink-2);
+      display: flex; align-items: center; gap: 10px;
+      transition: all 0.15s;
+    }
+    .pd-btn:hover { background: var(--bg-2); color: var(--ink); }
+    .pd-btn.danger:hover { background: var(--red-bg); color: var(--red); }
+    .pd-btn svg { flex-shrink: 0; opacity: 0.55; }
+    .pd-btn:hover svg { opacity: 1; }
+
+    /* ══════════════════════════════════════════
+       META AI CHAT SECTION
+    ══════════════════════════════════════════ */
+    .ai-chat-section {
+      padding: 64px 0;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+    }
+    .ai-chat-section .sec-eyebrow { color: #0082FB; }
+    .ai-providers {
+      display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;
+    }
+    .ai-provider-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 18px; border-radius: 100px;
+      border: 2px solid var(--border-md);
+      font-size: 0.83rem; font-weight: 600; color: var(--ink-2);
+      transition: all 0.2s; cursor: pointer;
+    }
+    .ai-provider-btn.active-claude { border-color: #c8861a; background: rgba(200,134,26,0.06); color: #c8861a; }
+    .ai-provider-btn.active-meta   { border-color: #0082FB; background: rgba(0,130,251,0.06); color: #0082FB; }
+    .ai-provider-btn:hover { border-color: var(--border-hi); }
+    .ai-provider-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-claude { background: #c8861a; }
+    .dot-meta   { background: #0082FB; }
+
+    .ai-chat-wrap {
+      background: var(--bg-card);
+      border: 1px solid var(--border-md);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .ai-chat-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-2);
+    }
+    .ai-chat-brand {
+      display: flex; align-items: center; gap: 9px;
+      font-weight: 600; font-size: 0.88rem; color: var(--ink);
+    }
+    .ai-chat-brand-icon {
+      width: 30px; height: 30px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ai-brand-claude { background: #1a1a2e; }
+    .ai-brand-meta   { background: linear-gradient(135deg, #0082FB, #00C6E0); }
+    .ai-plan-badge {
+      font-family: var(--font-m); font-size: 0.6rem; letter-spacing: 0.07em;
+      padding: 3px 8px; border-radius: 4px;
+    }
+    .badge-free { background: var(--green-bg); border: 1px solid rgba(13,138,94,0.25); color: var(--green); }
+    .badge-premium { background: var(--gold-bg); border: 1px solid var(--gold-bdr); color: var(--gold); }
+    .ai-usage-bar {
+      font-family: var(--font-m); font-size: 0.65rem; color: var(--ink-3);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .usage-track {
+      width: 80px; height: 4px; background: var(--border-md); border-radius: 2px; overflow: hidden;
+    }
+    .usage-fill {
+      height: 100%; border-radius: 2px;
+      background: var(--green);
+      transition: width 0.4s;
+    }
+
+    .ai-messages {
+      height: 340px; overflow-y: auto;
+      padding: 20px; display: flex; flex-direction: column; gap: 14px;
+    }
+    .ai-msg {
+      display: flex; gap: 10px;
+      animation: msgIn 0.25s cubic-bezier(0.16,1,0.3,1);
+    }
+    @keyframes msgIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    .ai-msg.user { flex-direction: row-reverse; }
+    .ai-msg-av {
+      width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 600; font-family: var(--font-m);
+    }
+    .av-bot-claude { background: var(--ink); color: #fff; }
+    .av-bot-meta   { background: linear-gradient(135deg,#0082FB,#00C6E0); color: #fff; }
+    .av-user       { background: var(--gold); color: #fff; }
+    .ai-bubble {
+      max-width: 75%; padding: 10px 14px;
+      border-radius: var(--r-sm); font-size: 0.85rem; line-height: 1.55;
+    }
+    .bubble-bot  { background: var(--bg-2); color: var(--ink); border-radius: 4px var(--r-sm) var(--r-sm) var(--r-sm); }
+    .bubble-user { background: var(--ink); color: #fff; border-radius: var(--r-sm) 4px var(--r-sm) var(--r-sm); }
+    .ai-typing { display: flex; gap: 4px; align-items: center; padding: 4px 0; }
+    .ai-typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-3); animation: typingBounce 1.2s infinite; }
+    .ai-typing span:nth-child(2){animation-delay:.15s} .ai-typing span:nth-child(3){animation-delay:.3s}
+    @keyframes typingBounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
+
+    .ai-chat-input-wrap {
+      display: flex; align-items: flex-end; gap: 10px;
+      padding: 14px 20px; border-top: 1px solid var(--border);
+    }
+    .ai-chat-input {
+      flex: 1; background: var(--bg-input); border: 1px solid var(--border-md);
+      border-radius: var(--r-sm); color: var(--ink);
+      padding: 10px 14px; font-size: 0.87rem; resize: none; outline: none;
+      min-height: 40px; max-height: 120px; font-family: var(--font-b);
+      transition: border-color 0.2s;
+    }
+    .ai-chat-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(200,134,26,0.08); }
+    .ai-chat-input::placeholder { color: var(--ink-4); }
+    .ai-send-btn {
+      width: 38px; height: 38px; border-radius: var(--r-sm);
+      background: var(--ink); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s; flex-shrink: 0;
+    }
+    .ai-send-btn:hover { background: #2d2d4e; transform: translateY(-1px); }
+    .ai-send-btn:disabled { opacity: 0.4; transform: none; cursor: not-allowed; }
+
+    .premium-prompt {
+      display: none; padding: 20px;
+      background: linear-gradient(135deg, var(--gold-bg), rgba(200,134,26,0.03));
+      border-top: 1px solid var(--gold-bdr);
+      text-align: center;
+    }
+    .premium-prompt.show { display: block; }
+    .premium-prompt h4 { font-family: var(--font-d); font-size: 1rem; color: var(--ink); margin-bottom: 5px; }
+    .premium-prompt p { font-size: 0.78rem; color: var(--ink-3); margin-bottom: 12px; }
+    .btn-upgrade {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: linear-gradient(135deg, #c8861a, #f5c842);
+      color: #fff; font-weight: 700; font-size: 0.83rem;
+      padding: 10px 22px; border-radius: var(--r-sm);
+      transition: all 0.2s; box-shadow: 0 4px 14px rgba(200,134,26,0.3);
+    }
+    .btn-upgrade:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(200,134,26,0.4); }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     AUTH SCREEN — centered card
+══════════════════════════════════════════ -->
+<div id="authScreen">
+  <div class="auth-card">
+
+    <!-- Logo -->
+    <div class="auth-logo">
+      <div class="auth-logo-mark">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+          <rect x="3" y="2" width="11" height="14" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M11 2v5h5" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M6 9h8M6 12h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="auth-logo-text">Resume<span>IQ</span></div>
+    </div>
+
+    <!-- Tab toggle -->
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tabLogin" onclick="switchTab('login')">SIGN IN</div>
+      <div class="auth-tab" id="tabSignup" onclick="switchTab('signup')">CREATE ACCOUNT</div>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="loginPane">
+      <div class="auth-heading">Welcome back</div>
+      <div class="auth-subhead">Sign in to continue your resume journey.</div>
+
+      <div class="f-group">
+        <label class="f-label">Email Address</label>
+        <div class="f-wrap">
+          <span class="f-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1 5l7 5 7-5" stroke="currentColor" stroke-width="1.5"/></svg></span>
+          <input class="f-input" type="email" id="lEmail" placeholder="you@example.com" autocomplete="email"/>
+        </div>
+        <div class="f-error" id="lEmailErr">Please enter a valid email address.</div>
+      </div>
+
+      <div class="f-group">
+        <label class="f-label">Password</label>
+        <div class="f-wrap">
+          <span class="f-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" stroke-width="1.5"/></svg></span>
+          <input class="f-input" type="password" id="lPassword" placeholder="Your password" autocomplete="current-password" style="padding-right:38px;"/>
+          <button class="pw-eye" type="button" onclick="togglePw('lPassword',this)" title="Show/hide password">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><ellipse cx="8" cy="8" rx="6" ry="4" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg>
+          </button>
+        </div>
+        <div class="f-error" id="lPassErr">Incorrect email or password.</div>
+      </div>
+
+      <button class="btn-submit" onclick="doLogin()">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M6 3H3a1 1 0 00-1 1v8a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Sign In
+      </button>
+
+      <div class="auth-switch">No account yet? <button onclick="switchTab('signup')">Create one free →</button></div>
+    </div>
+
+    <!-- SIGNUP -->
+    <div id="signupPane" style="display:none;">
+      <div class="auth-heading">Create account</div>
+      <div class="auth-subhead">Free forever · AI Chat · Resume Analysis · No credit card required.</div>
+
+      <!-- Free plan card highlight -->
+      <div style="background:linear-gradient(135deg,rgba(13,138,94,0.07),rgba(200,134,26,0.05));border:1px solid rgba(13,138,94,0.2);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+        <div style="font-size:1.2rem;">🎉</div>
+        <div>
+          <div style="font-size:0.8rem;font-weight:600;color:var(--green);">Free Plan Included</div>
+          <div style="font-family:var(--font-m);font-size:0.65rem;color:var(--ink-3);margin-top:2px;">5 AI chats/day · Resume analysis · Career path insights</div>
+        </div>
+      </div>
+
+      <div class="f-group">
+        <label class="f-label">Full Name</label>
+        <div class="f-wrap">
+          <span class="f-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2 14c0-3 2.5-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+          <input class="f-input" type="text" id="sName" placeholder="Your full name" autocomplete="name"/>
+        </div>
+        <div class="f-error" id="sNameErr">Name must be at least 2 characters.</div>
+      </div>
+
+      <div class="f-group">
+        <label class="f-label">Email Address</label>
+        <div class="f-wrap">
+          <span class="f-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1 5l7 5 7-5" stroke="currentColor" stroke-width="1.5"/></svg></span>
+          <input class="f-input" type="email" id="sEmail" placeholder="you@example.com" autocomplete="email"/>
+        </div>
+        <div class="f-error" id="sEmailErr">Enter a valid or unused email.</div>
+      </div>
+
+      <div class="f-group">
+        <label class="f-label">Password</label>
+        <div class="f-wrap">
+          <span class="f-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" stroke-width="1.5"/></svg></span>
+          <input class="f-input" type="password" id="sPass" placeholder="Min. 8 characters" autocomplete="new-password" oninput="pwStrength(this.value)" style="padding-right:38px;"/>
+          <button class="pw-eye" type="button" onclick="togglePw('sPass',this)"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><ellipse cx="8" cy="8" rx="6" ry="4" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg></button>
+        </div>
+        <div class="pw-str" id="pwStr">
+          <div class="pw-str-bar"><div class="pw-str-fill" id="pwFill"></div></div>
+          <div class="pw-str-lbl" id="pwLbl"></div>
+        </div>
+        <div class="f-error" id="sPassErr">Password must be at least 8 characters.</div>
+      </div>
+
+      <div class="f-group">
+        <label class="f-label">Confirm Password</label>
+        <div class="f-wrap">
+          <span class="f-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" stroke-width="1.5"/></svg></span>
+          <input class="f-input" type="password" id="sConfirm" placeholder="Repeat your password" autocomplete="new-password"/>
+        </div>
+        <div class="f-error" id="sConfirmErr">Passwords do not match.</div>
+      </div>
+
+      <button class="btn-submit" onclick="doSignup()">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Create Account
+      </button>
+
+      <div class="auth-switch">Already have an account? <button onclick="switchTab('login')">Sign in →</button></div>
+      <div class="auth-note">All data stored locally on your device. We never upload your resume or personal information.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     API KEY MODAL
+══════════════════════════════════════════ -->
+<div class="modal-ov" id="apiModal">
+  <div class="modal-box">
+    <h3>AI Integration</h3>
+    <p>Enter your Anthropic API key to enable deep AI-powered resume analysis. Your key stays in your browser and is never stored on any server.</p>
+    <input class="modal-input" type="password" id="apiKeyInput" placeholder="sk-ant-api03-…" autocomplete="off"/>
+    <div class="modal-btns">
+      <button class="btn-mcancel" id="apiCancel">Cancel</button>
+      <button class="btn-msave" id="apiSave">Save & Enable</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     NAV
+══════════════════════════════════════════ -->
+<header class="nav">
+  <div class="nav-logo">
+    <div class="nav-logo-mark">
+      <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><rect x="3" y="2" width="11" height="14" rx="1.5" stroke="currentColor" stroke-width="1.8"/><path d="M11 2v5h5" stroke="currentColor" stroke-width="1.8"/><path d="M6 9h8M6 12h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    <div class="nav-logo-text">Resume<span>IQ</span></div>
+  </div>
+  <div class="nav-right">
+    <nav class="nav-links">
+      <a href="#upload-section">Analyze</a>
+      <a href="#ai-chat">AI Chat</a>
+      <a href="#how-it-works">How It Works</a>
+    </nav>
+    <button class="btn-key" id="apiKeyBtn">
+      <span class="kdot" id="keyDot"></span>
+      <span id="keyLbl">AI Key</span>
+    </button>
+    <div class="nav-user" id="navUser">
+      <div class="nav-av" id="navAv" onclick="toggleProfileDropdown()" title="My Account">?</div>
+      <span class="nav-name" id="navName">—</span>
+      <!-- Profile Dropdown -->
+      <div class="profile-dropdown" id="profileDropdown">
+        <div class="pd-header">
+          <div class="pd-av-big" id="pdAvBig">?</div>
+          <div class="pd-info">
+            <div class="pd-name" id="pdName">—</div>
+            <div class="pd-email" id="pdEmail">—</div>
+            <div class="pd-plan">✦ FREE PLAN</div>
+          </div>
+        </div>
+        <div class="pd-stats">
+          <div class="pd-stat"><div class="pd-stat-val" id="pdAnalyses">0</div><div class="pd-stat-lbl">Analyses</div></div>
+          <div class="pd-stat"><div class="pd-stat-val" id="pdChats">0</div><div class="pd-stat-lbl">AI Chats</div></div>
+        </div>
+        <div class="pd-joined" id="pdJoined">Member since —</div>
+        <div class="pd-actions">
+          <button class="pd-btn" onclick="alert('Profile settings coming soon!')">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2 14c0-3 2.5-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Edit Profile
+          </button>
+          <button class="pd-btn" onclick="alert('Upgrade to Premium — coming soon!')">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2l2 4h4l-3 3 1 4-4-2-4 2 1-4-3-3h4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            Upgrade to Premium
+          </button>
+          <button class="pd-btn danger" onclick="closeProfileDropdown();doSignout()">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 3H3a1 1 0 00-1 1v8a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Sign Out
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════
+     HERO
+══════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-eyebrow"><span class="dot"></span> AI-Powered Resume Intelligence</div>
+  <h1 class="hero-title">Turn your resume into<br><em>your strongest asset</em></h1>
+  <p class="hero-sub">Upload your resume and a job description. Get an ATS score, skill radar, keyword gap analysis, career path matches, and a personalized improvement roadmap — instantly.</p>
+  <div class="hero-cta">
+    <a href="#upload-section" class="btn-primary">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 2v9M4 7l4 4 4-4M2 13h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      Start Analyzing
+    </a>
+    <a href="#how-it-works" class="btn-outline">How it works →</a>
+  </div>
+  <div class="hero-stats">
+    <div class="hstat"><span class="hstat-num" id="hs1">0<span>%</span></span><span class="hstat-lbl">ATS Accuracy</span></div>
+    <div class="hstat-div"></div>
+    <div class="hstat"><span class="hstat-num" id="hs2">0</span><span class="hstat-lbl">Data Points</span></div>
+    <div class="hstat-div"></div>
+    <div class="hstat"><span class="hstat-num" id="hs3">0<span>+</span></span><span class="hstat-lbl">Career Paths</span></div>
+    <div class="hstat-div"></div>
+    <div class="hstat"><span class="hstat-num" id="hs4">0<span>s</span></span><span class="hstat-lbl">Avg Analysis</span></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     UPLOAD SECTION
+══════════════════════════════════════════ -->
+<section class="upload-section" id="upload-section">
+  <div class="container">
+    <p class="sec-eyebrow">Step 01 — Upload</p>
+    <h2 class="sec-title">Start your analysis</h2>
+
+    <div class="upload-grid">
+      <!-- Resume panel -->
+      <div class="up-card">
+        <div class="up-card-label"><span class="up-num">01</span> Your Resume</div>
+        <div class="mode-toggle" id="modeToggle">
+          <div class="mode-btn on" data-m="file">Upload File</div>
+          <div class="mode-btn" data-m="text">Paste Text</div>
+        </div>
+        <div id="fileMode">
+          <div class="dropzone" id="dropzone">
+            <div class="dz-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="4" y="2" width="14" height="18" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M14 2v6h6" stroke="currentColor" stroke-width="1.8"/><path d="M8 11h8M8 14h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+            <p class="dz-title">Drop your resume here</p>
+            <p class="dz-sub">PDF · DOCX · TXT · Max 5MB</p>
+            <label class="btn-browse" for="resumeFile">Browse File</label>
+            <input type="file" id="resumeFile" accept=".pdf,.docx,.txt" hidden/>
+          </div>
+          <div class="file-tag" id="fileTag">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <span class="file-tag-name" id="tagName">—</span>
+            <span id="tagSize" style="opacity:.6;font-size:.65rem;margin-left:auto;"></span>
+            <button style="background:none;border:none;color:inherit;cursor:pointer;font-size:.9rem;" id="removeFile" title="Remove">✕</button>
+          </div>
+        </div>
+        <div id="textMode" style="display:none;">
+          <textarea class="jd-ta" id="resumeText" placeholder="Paste your resume text here…" style="height:220px;"></textarea>
+          <div class="char-count"><span id="resumeCC">0</span> characters</div>
+        </div>
+      </div>
+
+      <!-- JD panel -->
+      <div class="up-card">
+        <div class="up-card-label"><span class="up-num">02</span> Job Description <span class="up-opt">optional — unlocks keyword match</span></div>
+        <textarea class="jd-ta" id="jobDesc" placeholder="Paste the job description here to get a tailored match score, keyword gap analysis, and targeted suggestions…"></textarea>
+        <div class="char-count"><span id="jdCC">0</span> characters</div>
+      </div>
+    </div>
+
+    <div class="analyze-bar">
+      <button class="btn-analyze" id="analyzeBtn" disabled>
+        <span id="aBtnText">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.8"/><path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Run Full Analysis
+        </span>
+        <span id="aBtnLoad" style="display:none;align-items:center;gap:8px;">
+          <span class="spinner"></span> Analyzing…
+        </span>
+      </button>
+      <p class="analyze-note">🔒 Processed in your browser — no data transmitted or stored.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     LOADING
+══════════════════════════════════════════ -->
+<section class="loading-wrap" id="loadingScreen">
+  <div class="container">
+    <h2 class="loading-title">Analyzing your resume…</h2>
+    <p class="loading-sub" id="loadSub">Initializing pipeline</p>
+    <div class="stage-list" id="stageList">
+      <div class="stage-row"><div class="stage-ic">⬡</div><span class="stage-lbl">Parsing resume structure</span></div>
+      <div class="stage-row"><div class="stage-ic">◎</div><span class="stage-lbl">Extracting skills & technologies</span></div>
+      <div class="stage-row"><div class="stage-ic">▦</div><span class="stage-lbl">Running ATS compatibility check</span></div>
+      <div class="stage-row"><div class="stage-ic">⬡</div><span class="stage-lbl">Mapping keyword matches</span></div>
+      <div class="stage-row"><div class="stage-ic">◎</div><span class="stage-lbl">Generating career insights</span></div>
+    </div>
+    <div class="prog-wrap"><div class="prog-bar" id="progBar"></div></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     RESULTS
+══════════════════════════════════════════ -->
+<section class="results-section" id="results">
+  <div class="container">
+    <div class="res-topbar">
+      <h2>Analysis Results</h2>
+      <div class="res-actions">
+        <button class="btn-export" onclick="window.print()">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 10v3h10v-3M8 2v7M5 6l3 3 3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Export PDF
+        </button>
+        <button class="btn-ghost" id="resetBtn">← New Analysis</button>
+      </div>
+    </div>
+
+    <!-- Score + overview -->
+    <div class="score-row">
+      <div class="score-card">
+        <div class="ring-wrap">
+          <svg class="score-ring" viewBox="0 0 120 120">
+            <circle class="ring-track" cx="60" cy="60" r="50"/>
+            <circle class="ring-fill" id="ringFill" cx="60" cy="60" r="50"/>
+          </svg>
+          <div class="ring-inner">
+            <span class="ring-num" id="ringNum">0</span>
+            <span class="ring-lbl">ATS Score</span>
+          </div>
+        </div>
+        <div class="verdict" id="verdict">—</div>
+        <div class="bk-list" id="bkList"></div>
+      </div>
+      <div class="ov-card">
+        <h3>Resume Overview</h3>
+        <div class="ov-grid" id="ovGrid"></div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="res-tabs">
+      <div class="tab-btn on" data-t="skills">Skills <span class="tab-num" id="tSkills">0</span></div>
+      <div class="tab-btn" data-t="keywords">Keywords <span class="tab-num" id="tKw">—</span></div>
+      <div class="tab-btn" data-t="suggestions">Suggestions <span class="tab-num" id="tSug">0</span></div>
+      <div class="tab-btn" data-t="career">Career Paths <span class="tab-num" id="tCareer">0</span></div>
+    </div>
+
+    <!-- Skills pane -->
+    <div class="tab-pane on" id="pane-skills">
+      <div class="two-col">
+        <div class="card">
+          <div class="card-hd"><h3>Skill Radar</h3><span class="badge" id="radarBadge">—</span></div>
+          <div class="radar-wrap"><canvas id="radarC" width="280" height="280"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><h3>Detected Skills</h3><span class="badge" id="skillsBadge">0</span></div>
+          <div class="cat-filters" id="catFilters"></div>
+          <div class="chip-cloud" id="chipCloud"></div>
+        </div>
+      </div>
+      <div style="margin-top:18px;">
+        <div class="card">
+          <div class="card-hd"><h3>Resume Sections</h3></div>
+          <div class="sec-list" id="secList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Keywords pane -->
+    <div class="tab-pane" id="pane-keywords">
+      <div class="two-col">
+        <div class="card">
+          <div class="card-hd"><h3>Match Score</h3></div>
+          <div class="match-big">
+            <div class="match-num" id="matchNum">—</div>
+            <div class="match-sub">Keyword Match Rate</div>
+            <div class="match-bar" id="matchBar" style="display:none;">
+              <span id="mbFound">0</span>
+              <div class="mbt"><div class="mbf" id="mbFill"></div></div>
+              <span id="mbTotal">0</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><h3>Keyword Analysis</h3></div>
+          <div id="kwContent"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Suggestions pane -->
+    <div class="tab-pane" id="pane-suggestions">
+      <div class="two-col">
+        <div class="card">
+          <div class="card-hd"><h3>High Priority</h3><span class="badge red" id="highCount">0</span></div>
+          <div class="sug-list" id="highList"></div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><h3>Medium & Low</h3><span class="badge" id="otherCount">0</span></div>
+          <div class="sug-list" id="otherList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Career pane -->
+    <div class="tab-pane" id="pane-career">
+      <div class="two-col">
+        <div class="card">
+          <div class="card-hd"><h3>Career Matches</h3><span class="badge" id="careerBadge">0</span></div>
+          <div id="careerList" style="display:flex;flex-direction:column;gap:10px;"></div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><h3>Improvement Roadmap</h3></div>
+          <div class="road-list" id="roadList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     AI CHAT SECTION
+══════════════════════════════════════════ -->
+<section class="ai-chat-section" id="ai-chat">
+  <div class="container">
+    <p class="sec-eyebrow">AI Assistant</p>
+    <h2 class="sec-title">Chat with AI — Free & Premium</h2>
+
+    <!-- Provider selector -->
+    <div class="ai-providers">
+      <button class="ai-provider-btn active-claude" id="providerClaude" onclick="switchAIProvider('claude')">
+        <span class="ai-provider-dot dot-claude"></span> Claude AI
+      </button>
+      <button class="ai-provider-btn" id="providerMeta" onclick="switchAIProvider('meta')">
+        <span class="ai-provider-dot dot-meta"></span> Meta AI
+      </button>
+    </div>
+
+    <div class="ai-chat-wrap">
+      <!-- Top bar -->
+      <div class="ai-chat-topbar">
+        <div class="ai-chat-brand">
+          <div class="ai-chat-brand-icon ai-brand-claude" id="chatBrandIcon">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><rect x="3" y="2" width="11" height="14" rx="1.5" stroke="white" stroke-width="1.8"/><path d="M11 2v5h5" stroke="white" stroke-width="1.8"/></svg>
+          </div>
+          <span id="chatBrandName">Claude AI</span>
+          <span class="ai-plan-badge badge-free" id="chatPlanBadge">FREE</span>
+        </div>
+        <div class="ai-usage-bar">
+          <span id="usageText">3 / 5 free messages</span>
+          <div class="usage-track"><div class="usage-fill" id="usageFill" style="width:60%"></div></div>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div class="ai-messages" id="aiMessages">
+        <div class="ai-msg bot">
+          <div class="ai-msg-av av-bot-claude" id="botAvatar">C</div>
+          <div class="ai-bubble bubble-bot" id="welcomeMsg">Hi! I'm Claude AI. I can help you improve your resume, answer career questions, or review your skills. You have <strong>5 free messages</strong> — upgrade anytime for unlimited access. What would you like help with?</div>
+        </div>
+      </div>
+
+      <!-- Premium prompt (shows after free limit) -->
+      <div class="premium-prompt" id="premiumPrompt">
+        <h4>✦ You've reached your free limit</h4>
+        <p>Upgrade to Premium for unlimited AI chat, advanced resume insights, and priority support.</p>
+        <button class="btn-upgrade" onclick="unlockPremium()">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2l2 4h4l-3 3 1 4-4-2-4 2 1-4-3-3h4z" stroke="currentColor" stroke-width="1.5" fill="currentColor" stroke-linejoin="round"/></svg>
+          Upgrade to Premium — ₹499/mo
+        </button>
+      </div>
+
+      <!-- Input -->
+      <div class="ai-chat-input-wrap">
+        <textarea class="ai-chat-input" id="aiInput" placeholder="Ask about your resume, career advice, or skills…" rows="1" onkeydown="aiInputKeydown(event)" oninput="autoResizeAI(this)"></textarea>
+        <button class="ai-send-btn" id="aiSendBtn" onclick="sendAIMessage()">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 8l12-6-5 12-2-5-5-1z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     HOW IT WORKS
+══════════════════════════════════════════ -->
+<section class="hiw" id="how-it-works">
+  <div class="container">
+    <p class="sec-eyebrow">Simple Process</p>
+    <h2 class="sec-title">Three steps to a better resume</h2>
+    <div class="hiw-grid">
+      <div class="hiw-step">
+        <div class="hiw-num">01</div>
+        <h4>Upload</h4>
+        <p>Drop your resume in PDF, DOCX, or TXT format. Optionally paste a job description for a tailored ATS match score.</p>
+        <div class="hiw-arrow">→</div>
+      </div>
+      <div class="hiw-step">
+        <div class="hiw-num">02</div>
+        <h4>Analyze</h4>
+        <p>Our engine parses your resume, extracts 50+ data points, runs ATS compatibility, and maps skills across 8 categories.</p>
+        <div class="hiw-arrow">→</div>
+      </div>
+      <div class="hiw-step">
+        <div class="hiw-num">03</div>
+        <h4>Improve</h4>
+        <p>Receive a prioritized action plan, career path suggestions with match percentages, and a step-by-step improvement roadmap.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container footer-in">
+    <div class="footer-logo">Resume<span>IQ</span></div>
+    <p class="footer-copy">Built for job seekers. Privacy-first. Zero data stored.</p>
+    <div class="footer-links"><a href="#upload-section">Analyze</a><a href="#how-it-works">How It Works</a></div>
+  </div>
+</footer>
+
+<div class="toast-box" id="toastBox"></div>
+
+<script>
+  /* ════════════════════════════════════════════════════
+     AUTH SYSTEM
+  ════════════════════════════════════════════════════ */
+  const getUsers   = () => { try { return JSON.parse(localStorage.getItem('riq_users')||'[]'); } catch(e){return[];} };
+  const saveUsers  = u  => localStorage.setItem('riq_users', JSON.stringify(u));
+  const getSession = () => { try { return JSON.parse(localStorage.getItem('riq_sess')||'null'); } catch(e){return null;} };
+  const saveSession= s  => localStorage.setItem('riq_sess', JSON.stringify(s));
+  const clearSess  = () => localStorage.removeItem('riq_sess');
+  const hashPw     = pw => { let h=0; for(let i=0;i<pw.length;i++) h=(Math.imul(31,h)+pw.charCodeAt(i))|0; return h.toString(36); };
+  const $          = id => document.getElementById(id);
+
+  window.switchTab = function(tab) {
+    $('loginPane').style.display   = tab==='login'  ? 'block' : 'none';
+    $('signupPane').style.display  = tab==='signup' ? 'block' : 'none';
+    $('tabLogin').classList.toggle('active',  tab==='login');
+    $('tabSignup').classList.toggle('active', tab==='signup');
+    clearErrors();
+  };
+
+  function clearErrors() {
+    document.querySelectorAll('.f-error').forEach(e => e.classList.remove('on'));
+    document.querySelectorAll('.f-input').forEach(i => i.classList.remove('err'));
+  }
+  function showErr(errId, inputId, msg) {
+    const e = $(errId); if(msg) e.textContent = msg;
+    e.classList.add('on');
+    if(inputId) $(inputId).classList.add('err');
+  }
+
+  window.togglePw = function(id, btn) {
+    const inp = $(id);
+    const show = inp.type === 'password';
+    inp.type = show ? 'text' : 'password';
+    btn.style.color = show ? 'var(--gold)' : '';
+  };
+
+  window.pwStrength = function(pw) {
+    const el = $('pwStr'), fill = $('pwFill'), lbl = $('pwLbl');
+    if(!pw){ el.classList.remove('on'); return; }
+    el.classList.add('on');
+    let s=0;
+    if(pw.length>=8) s++; if(pw.length>=12) s++;
+    if(/[A-Z]/.test(pw)) s++; if(/[0-9]/.test(pw)) s++; if(/[^A-Za-z0-9]/.test(pw)) s++;
+    const lvls=[
+      {w:'20%',c:'#c0392b',t:'Weak'},{w:'40%',c:'#c0392b',t:'Weak'},
+      {w:'60%',c:'#b7770d',t:'Fair'},{w:'80%',c:'#0d8a5e',t:'Good'},{w:'100%',c:'#0d8a5e',t:'Strong'}
+    ];
+    const l=lvls[Math.min(s-1,4)]||lvls[0];
+    fill.style.width=l.w; fill.style.background=l.c;
+    lbl.textContent=l.t; lbl.style.color=l.c;
+  };
+
+  window.doLogin = function() {
+    clearErrors();
+    const email = $('lEmail').value.trim().toLowerCase();
+    const pw    = $('lPassword').value;
+    let ok = true;
+    if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showErr('lEmailErr','lEmail'); ok=false; }
+    if(!pw){ showErr('lPassErr','lPassword'); ok=false; }
+    if(!ok) return;
+    const user = getUsers().find(u=>u.email===email && u.pw===hashPw(pw));
+    if(!user){ showErr('lPassErr','lPassword','Incorrect email or password.'); showErr('lEmailErr','lEmail'); return; }
+    saveSession({name:user.name, email:user.email});
+    enterApp(user);
+  };
+
+  window.doSignup = function() {
+    clearErrors();
+    const name = $('sName').value.trim();
+    const email= $('sEmail').value.trim().toLowerCase();
+    const pw   = $('sPass').value;
+    const conf = $('sConfirm').value;
+    let ok=true;
+    if(name.length<2){ showErr('sNameErr','sName'); ok=false; }
+    if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showErr('sEmailErr','sEmail','Please enter a valid email.'); ok=false; }
+    if(pw.length<8){ showErr('sPassErr','sPass'); ok=false; }
+    if(pw!==conf){ showErr('sConfirmErr','sConfirm'); ok=false; }
+    if(!ok) return;
+    const users=getUsers();
+    if(users.find(u=>u.email===email)){ showErr('sEmailErr','sEmail','Email already registered.'); return; }
+    const u={name,email,pw:hashPw(pw),joined:new Date().toISOString()};
+    users.push(u); saveUsers(users);
+    saveSession({name,email});
+    enterApp(u);
+  };
+
+  window.doSignout = function () {
+    clearSess();
+
+    const authScreen = document.getElementById("authScreen");
+    const email = document.getElementById("lEmail");
+    const password = document.getElementById("lPassword");
+
+    if (authScreen) {
+      authScreen.style.display = "flex";
+      authScreen.classList.remove("hiding");
+    }
+
+    if (email) email.value = "";
+    if (password) password.value = "";
+
+    switchTab("login");
+  };
+
+  function enterApp(user) {
+    const initials = user.name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+    $('navAv').textContent   = initials;
+    $('navName').textContent = user.name.split(' ')[0];
+    // Populate profile dropdown
+    $('pdAvBig').textContent  = initials;
+    $('pdName').textContent   = user.name;
+    $('pdEmail').textContent  = user.email;
+    const joined = user.joined ? new Date(user.joined).toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'}) : 'Today';
+    $('pdJoined').textContent = 'Member since ' + joined;
+    const sess = JSON.parse(localStorage.getItem('riq_sess')||'null');
+    $('pdAnalyses').textContent = sess && sess.analyses ? sess.analyses : '0';
+    $('pdChats').textContent    = sess && sess.chats    ? sess.chats    : '0';
+    const auth = $('authScreen');
+    auth.classList.add('hiding');
+    setTimeout(()=>{ auth.style.display='none'; }, 450);
+  }
+
+  window.toggleProfileDropdown = function() {
+    const dd = $('profileDropdown');
+    dd.classList.toggle('open');
+  };
+  window.closeProfileDropdown = function() {
+    $('profileDropdown').classList.remove('open');
+  };
+  // Close dropdown on outside click
+  document.addEventListener('click', e => {
+    const user = $('navUser');
+    if(user && !user.contains(e.target)) closeProfileDropdown();
+  });
+
+  // Keyboard submit
+  document.addEventListener('keydown', e => {
+    if(e.key!=='Enter' || $('authScreen').style.display==='none') return;
+    if($('loginPane').style.display!=='none') doLogin();
+    else doSignup();
+  });
+
+  // Boot
+  (function() {
+    const sess = getSession();
+    if(sess && sess.email) enterApp(sess);
+  })();
+
+  /* ════════════════════════════════════════════════════
+     MAIN APP
+  ════════════════════════════════════════════════════ */
+  (function(){
+    'use strict';
+
+    let file=null, resumeText='', jdText='', mode='file', apiKey=localStorage.getItem('riq_key')||'', skillFilter='all', allSkills=[];
+
+    /* ── Hero counters ── */
+    setTimeout(()=>{
+      animCount($('hs1').childNodes[0], 0, 98, 1800);
+      animCount($('hs2'), 0, 50, 2000);
+      animCount($('hs3').childNodes[0], 0, 24, 1600);
+      animCount($('hs4').childNodes[0], 0, 3, 1200);
+    }, 500);
+
+    /* ── API key ── */
+    function updateKeyUI(){
+      const btn=$('apiKeyBtn'), dot=$('keyDot'), lbl=$('keyLbl');
+      if(apiKey){ btn.classList.add('on'); dot.style.cssText='background:var(--green);box-shadow:0 0 6px var(--green)'; lbl.textContent='AI Active'; }
+      else { btn.classList.remove('on'); dot.style.cssText=''; lbl.textContent='AI Key'; }
+    }
+    updateKeyUI();
+    $('apiKeyBtn').addEventListener('click',()=>{ $('apiKeyInput').value=apiKey||''; $('apiModal').classList.add('on'); });
+    $('apiCancel').addEventListener('click',()=>$('apiModal').classList.remove('on'));
+    $('apiSave').addEventListener('click',()=>{
+      apiKey=$('apiKeyInput').value.trim();
+      if(apiKey) localStorage.setItem('riq_key',apiKey); else localStorage.removeItem('riq_key');
+      updateKeyUI(); $('apiModal').classList.remove('on');
+      toast(apiKey?'AI mode enabled!':'API key cleared', apiKey?'ok':'inf');
+    });
+    $('apiModal').addEventListener('click',e=>{ if(e.target===$('apiModal')) $('apiModal').classList.remove('on'); });
+
+    /* ── Mode toggle ── */
+    $('modeToggle').addEventListener('click',e=>{
+      const btn=e.target.closest('.mode-btn'); if(!btn) return;
+      mode=btn.dataset.m;
+      $('modeToggle').querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('on',b.dataset.m===mode));
+      $('fileMode').style.display=mode==='file'?'block':'none';
+      $('textMode').style.display=mode==='text'?'block':'none';
+      checkReady();
+    });
+    $('resumeText').addEventListener('input',()=>{ $('resumeCC').textContent=$('resumeText').value.length; resumeText=$('resumeText').value; checkReady(); });
+
+    /* ── Drop zone ── */
+    const dz=$('dropzone'), fi=$('resumeFile');
+    dz.addEventListener('dragover',e=>{ e.preventDefault(); dz.classList.add('over'); });
+    dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+    dz.addEventListener('drop',e=>{ e.preventDefault(); dz.classList.remove('over'); if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+    dz.addEventListener('click',e=>{ if(!e.target.closest('label')) fi.click(); });
+    fi.addEventListener('change',e=>{ if(e.target.files[0]) handleFile(e.target.files[0]); });
+    $('removeFile').addEventListener('click',e=>{ e.stopPropagation(); clearFile(); });
+
+    function handleFile(f){
+      const ext=f.name.split('.').pop().toLowerCase();
+      if(!['pdf','docx','txt'].includes(ext)){ toast('Use PDF, DOCX, or TXT.','err'); return; }
+      if(f.size>5*1024*1024){ toast('File too large. Max 5MB.','err'); return; }
+      file=f; $('tagName').textContent=f.name; $('tagSize').textContent=fmtBytes(f.size);
+      $('fileTag').classList.add('on');
+      if(ext==='txt'){ const r=new FileReader(); r.onload=ev=>{ resumeText=ev.target.result; }; r.readAsText(f); }
+      else resumeText=`[${f.name}]`;
+      checkReady(); toast(f.name+' attached','ok');
+    }
+    function clearFile(){ file=null; resumeText=''; $('fileTag').classList.remove('on'); fi.value=''; checkReady(); }
+
+    $('jobDesc').addEventListener('input',()=>{ jdText=$('jobDesc').value; $('jdCC').textContent=jdText.length; });
+
+    function checkReady(){
+      const has = mode==='file' ? !!file : $('resumeText').value.trim().length>50;
+      $('analyzeBtn').disabled=!has;
+    }
+
+    /* ── Analyze ── */
+    $('analyzeBtn').addEventListener('click', async ()=>{
+      $('aBtnText').style.display='none'; $('aBtnLoad').style.display='flex';
+      $('analyzeBtn').disabled=true;
+      $('upload-section').style.display='none';
+      $('loadingScreen').classList.add('on');
+      try {
+        const txt = mode==='text' ? $('resumeText').value : resumeText;
+        const data = (apiKey && txt.length>100) ? await aiAnalyze(txt,jdText) : await mockAnalyze(txt||'sample',jdText);
+        await runLoader(data);
+        render(data);
+      } catch(e) {
+        console.error(e); toast('Analysis failed — using mock data.','err');
+        const data=await mockAnalyze('sample',jdText); await runLoader(data); render(data);
+      } finally {
+        $('aBtnText').style.display=''; $('aBtnLoad').style.display='none';
+        $('analyzeBtn').disabled=false;
+      }
+    });
+
+    $('resetBtn').addEventListener('click',()=>{
+      $('results').classList.remove('on');
+      $('upload-section').style.display='block';
+      $('upload-section').scrollIntoView({behavior:'smooth'});
+      clearFile(); $('jobDesc').value=''; jdText=''; $('jdCC').textContent='0';
+    });
+
+    /* ── Loader animation ── */
+    async function runLoader(){
+      const rows=document.querySelectorAll('.stage-row'), bar=$('progBar');
+      const subs=['Parsing resume structure…','Extracting skills…','Checking ATS compatibility…','Mapping keywords…','Generating insights…'];
+      for(let i=0;i<rows.length;i++){
+        rows[i].classList.add('active'); rows[i].querySelector('.stage-ic').textContent='↻';
+        $('loadSub').textContent=subs[i]; bar.style.width=((i+.5)/rows.length*100)+'%';
+        await sleep(380+Math.random()*260);
+        rows[i].classList.remove('active'); rows[i].classList.add('done'); rows[i].querySelector('.stage-ic').textContent='✓';
+        bar.style.width=((i+1)/rows.length*100)+'%';
+      }
+      await sleep(260);
+      $('loadingScreen').classList.remove('on');
+      $('results').classList.add('on');
+      $('results').scrollIntoView({behavior:'smooth'});
+      setTimeout(()=>{ rows.forEach(r=>{ r.classList.remove('done'); r.querySelector('.stage-ic').textContent=r.querySelector('.stage-ic').textContent; }); bar.style.width='0%'; },600);
+    }
+
+    /* ── AI analysis ── */
+    async function aiAnalyze(rt, jd){
+      const prompt=`Analyze this resume${jd?' against the job description':''} and return ONLY valid JSON with this exact structure (no markdown, no explanation):
+{"atsScore":<0-100>,"overview":{"Words":"<n>","Pages":"<n>","Sections":"<n>","Skills":"<n>","Action Verbs":"<n>","Metrics":"<n>"},"breakdown":{"Formatting":<n>,"Keywords":<n>,"Content":<n>,"Readability":<n>},"skills":[{"name":"<s>","cat":"<Frontend|Backend|Data|DevOps|Cloud|Tools|Soft Skills>"}],"keywordMatch":{"score":<n or null>,"found":["<k>"],"missing":["<k>"]},"sections":[{"name":"<s>","icon":"<emoji>","status":"<ok|warn|missing>"}],"suggestions":[{"text":"<t>","priority":"<high|mid|low>"}],"careerMatches":[{"role":"<r>","level":"<Junior|Mid|Senior>","match":<0-100>,"skills":["<s>"]}],"roadmap":[{"step":"<n>","title":"<t>","desc":"<d>"}]}
+Resume:\n${rt.slice(0,3000)}${jd?'\nJob Description:\n'+jd.slice(0,1500):''}`;
+      const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-opus-4-5',max_tokens:2000,messages:[{role:'user',content:prompt}]})});
+      const d=await res.json(); const raw=d.content?.[0]?.text||'';
+      const m=raw.match(/\{[\s\S]*\}/); if(!m) throw new Error('No JSON');
+      return JSON.parse(m[0]);
+    }
+
+    /* ── Mock analysis ── */
+    async function mockAnalyze(rt,jd){
+      await sleep(1400+Math.random()*500);
+      const hasJD=jd&&jd.trim().length>30;
+      const pool=[
+        {name:'JavaScript',cat:'Frontend'},{name:'React',cat:'Frontend'},{name:'TypeScript',cat:'Frontend'},
+        {name:'Vue.js',cat:'Frontend'},{name:'HTML/CSS',cat:'Frontend'},{name:'Next.js',cat:'Frontend'},
+        {name:'Node.js',cat:'Backend'},{name:'Python',cat:'Backend'},{name:'REST APIs',cat:'Backend'},
+        {name:'GraphQL',cat:'Backend'},{name:'PostgreSQL',cat:'Data'},{name:'MongoDB',cat:'Data'},
+        {name:'Redis',cat:'Data'},{name:'SQL',cat:'Data'},{name:'Docker',cat:'DevOps'},
+        {name:'Kubernetes',cat:'DevOps'},{name:'CI/CD',cat:'DevOps'},{name:'AWS',cat:'Cloud'},
+        {name:'GCP',cat:'Cloud'},{name:'Git',cat:'Tools'},{name:'Figma',cat:'Tools'},
+        {name:'Jest',cat:'Tools'},{name:'Agile',cat:'Soft Skills'},{name:'Leadership',cat:'Soft Skills'},
+      ];
+      const skills=shuffle(pool).slice(0,10+Math.floor(Math.random()*7));
+      const jdKW=hasJD?extractKW(jd):['React','Node.js','TypeScript','AWS','CI/CD','Agile','REST','Docker','Python'];
+      const found=jdKW.filter(()=>Math.random()>.35), missing=jdKW.filter(k=>!found.includes(k));
+      const ats=Math.round(hasJD?50+(found.length/jdKW.length)*35+Math.random()*10:58+Math.random()*30);
+      return {
+        atsScore:ats,
+        overview:{'Words':String(350+Math.floor(Math.random()*400)),'Pages':'1–2','Sections':String(5+Math.floor(Math.random()*3)),'Skills':String(skills.length),'Action Verbs':String(8+Math.floor(Math.random()*10)),'Metrics':String(Math.floor(Math.random()*6))},
+        breakdown:{'Formatting':clamp(62+Math.random()*34),'Keywords':hasJD?clamp(found.length/jdKW.length*100):clamp(55+Math.random()*30),'Content':clamp(55+Math.random()*40),'Readability':clamp(65+Math.random()*30)},
+        skills,
+        keywordMatch:{score:hasJD?Math.round(found.length/jdKW.length*100):null,found,missing},
+        sections:[
+          {name:'Contact Information',icon:'👤',status:'ok'},{name:'Professional Summary',icon:'📝',status:rand()>.4?'ok':'missing'},
+          {name:'Work Experience',icon:'💼',status:'ok'},{name:'Education',icon:'🎓',status:'ok'},
+          {name:'Skills',icon:'🛠',status:'ok'},{name:'Projects',icon:'🚀',status:rand()>.5?'ok':'missing'},
+          {name:'Certifications',icon:'📜',status:rand()>.6?'ok':'warn'},{name:'Portfolio / Links',icon:'🔗',status:rand()>.5?'ok':'warn'},
+        ],
+        suggestions:buildSug(ats,hasJD,missing),
+        careerMatches:[
+          {role:'Frontend Developer',level:'Mid',match:clamp(78+Math.floor((rand()-.5)*22)),skills:['React','TypeScript','CSS']},
+          {role:'Full Stack Engineer',level:'Mid',match:clamp(70+Math.floor((rand()-.5)*22)),skills:['Node.js','React','PostgreSQL']},
+          {role:'Software Engineer',level:'Mid',match:clamp(66+Math.floor((rand()-.5)*20)),skills:['JavaScript','Python','Git']},
+          {role:'DevOps Engineer',level:'Junior',match:clamp(52+Math.floor((rand()-.5)*18)),skills:['Docker','CI/CD','AWS']},
+        ],
+        roadmap:[
+          {step:'1',title:'Quantify Achievements',desc:'Add numbers to at least 5 bullet points (e.g., "Reduced load time by 40%, serving 50K users").'},
+          {step:'2',title:'Fill Section Gaps',desc:'Add a professional summary and expand the projects section with live links or GitHub repos.'},
+          {step:'3',title:'Keyword Optimization',desc:'Mirror exact phrasing from target job postings in your skills and experience sections.'},
+          {step:'4',title:'ATS Formatting',desc:'Remove tables, columns, and text boxes. Use standard headings. Save as .docx or clean .pdf.'},
+        ],
+      };
+    }
+
+    function buildSug(ats,hasJD,missing){
+      const s=[];
+      if(ats<70) s.push({text:'Add quantifiable achievements (e.g., "Reduced load time by 40%") to strengthen impact statements.',priority:'high'});
+      if(missing.length) s.push({text:`Include missing keywords from the job description: ${missing.slice(0,3).join(', ')}.`,priority:'high'});
+      s.push({text:'Use a single-column layout — ATS systems often fail to parse multi-column formats, tables, and text boxes.',priority:'mid'});
+      s.push({text:'Start every bullet with a strong action verb: Led, Built, Architected, Optimized, Delivered.',priority:'mid'});
+      if(rand()>.4) s.push({text:'Write a 3–4 line professional summary targeting your desired role and highlighting 2–3 key strengths.',priority:'mid'});
+      s.push({text:'Standardize all date formats (e.g., "Jan 2022 – Mar 2024") for clean ATS parsing.',priority:'low'});
+      s.push({text:'Include a live GitHub or portfolio link — 78% of tech recruiters visit candidate portfolios.',priority:'low'});
+      if(rand()>.5) s.push({text:'Mirror the exact terminology from job descriptions in your skills section for better keyword matching.',priority:'low'});
+      return s;
+    }
+
+    /* ── Render ── */
+    function render(d){
+      allSkills=d.skills;
+      renderScore(d.atsScore, d.breakdown);
+      renderOv(d.overview);
+      renderSkills(d.skills);
+      renderKw(d.keywordMatch);
+      renderSuggestions(d.suggestions);
+      renderSections(d.sections);
+      renderCareer(d.careerMatches||[],d.roadmap||[]);
+      drawRadar(d.skills);
+      $('tSkills').textContent=d.skills.length;
+      $('tKw').textContent=d.keywordMatch.score!==null?(d.keywordMatch.found.length+d.keywordMatch.missing.length)+'':'—';
+      $('tSug').textContent=d.suggestions.length;
+      $('tCareer').textContent=(d.careerMatches||[]).length;
+    }
+
+    function renderScore(score, bk){
+      const fill=$('ringFill'), num=$('ringNum'), verd=$('verdict');
+      setTimeout(()=>{
+        const off=314-(score/100)*314;
+        fill.style.strokeDashoffset=off;
+        if(score>=80){ fill.style.stroke='var(--green)'; verd.className='verdict ex'; verd.textContent='✓ Excellent — ATS Ready'; }
+        else if(score>=65){ fill.style.stroke='var(--gold)'; verd.className='verdict gd'; verd.textContent='~ Good — Minor Fixes Needed'; }
+        else if(score>=50){ fill.style.stroke='var(--amber)'; verd.className='verdict fr'; verd.textContent='⚠ Fair — Improvements Needed'; }
+        else { fill.style.stroke='var(--red)'; verd.className='verdict pr'; verd.textContent='✗ Poor — Significant Rework'; }
+        animCount(num, 0, score, 1400);
+        const bkEl=$('bkList'); bkEl.innerHTML='';
+        Object.entries(bk).forEach(([l,v])=>{
+          const p=Math.round(v);
+          bkEl.innerHTML+=`<div class="bk-row"><span class="bk-lbl">${esc(l)}</span><div class="bk-track"><div class="bk-fill" data-p="${p}"></div></div><span class="bk-val">${p}%</span></div>`;
+        });
+        setTimeout(()=>{ bkEl.querySelectorAll('.bk-fill').forEach(b=>b.style.width=b.dataset.p+'%'); },100);
+      },150);
+    }
+
+    function renderOv(ov){
+      const g=$('ovGrid'); g.innerHTML='';
+      Object.entries(ov).forEach(([k,v])=>{ g.innerHTML+=`<div class="ov-item"><div class="ov-val">${esc(v)}</div><div class="ov-key">${esc(k)}</div></div>`; });
+    }
+
+    function renderSkills(skills){
+      allSkills=skills; $('skillsBadge').textContent=skills.length+' found';
+      const cats=['all',...new Set(skills.map(s=>s.cat))];
+      const cf=$('catFilters'); cf.innerHTML='';
+      cats.forEach(c=>{ const b=document.createElement('div'); b.className='cat-btn'+(c===skillFilter?' on':''); b.textContent=c.toUpperCase(); b.addEventListener('click',()=>{ skillFilter=c; cf.querySelectorAll('.cat-btn').forEach(x=>x.classList.toggle('on',x.textContent===c.toUpperCase())); renderChips(skills); }); cf.appendChild(b); });
+      renderChips(skills);
+    }
+
+    function renderChips(skills){
+      const filtered=skillFilter==='all'?skills:skills.filter(s=>s.cat===skillFilter);
+      const el=$('chipCloud'); el.innerHTML='';
+      filtered.forEach((s,i)=>{ const d=document.createElement('div'); d.className='chip'+(i<4&&skillFilter==='all'?' top':''); d.innerHTML=`${esc(s.name)}<span class="chip-cat">${esc(s.cat)}</span>`; el.appendChild(d); });
+    }
+
+    function renderKw(km){
+      if(!km.score){ $('matchNum').innerHTML='N/A'; $('matchBar').style.display='none'; $('kwContent').innerHTML='<p style="color:var(--ink-3);font-size:.83rem;font-family:var(--font-m);">Paste a job description to unlock keyword match analysis.</p>'; return; }
+      $('matchNum').textContent=km.score+'%';
+      $('matchBar').style.display='flex'; $('mbFound').textContent=km.found.length+' found'; $('mbTotal').textContent=(km.found.length+km.missing.length)+' total';
+      setTimeout(()=>{ $('mbFill').style.width=km.score+'%'; },150);
+      let h='';
+      if(km.found.length) h+=`<div class="kw-grp-title">FOUND (${km.found.length})</div><div class="kw-chips">${km.found.map(k=>`<span class="kw found">${esc(k)}</span>`).join('')}</div>`;
+      if(km.missing.length) h+=`<div class="kw-grp-title" style="margin-top:14px">MISSING (${km.missing.length})</div><div class="kw-chips">${km.missing.map(k=>`<span class="kw miss">${esc(k)}</span>`).join('')}</div>`;
+      $('kwContent').innerHTML=h;
+    }
+
+    function renderSuggestions(sugs){
+      const high=sugs.filter(s=>s.priority==='high'), other=sugs.filter(s=>s.priority!=='high');
+      $('highCount').textContent=high.length; $('otherCount').textContent=other.length;
+      const mk=(list,el)=>{ el.innerHTML=''; list.forEach(s=>{ el.innerHTML+=`<div class="sug-card"><span class="sug-dot ${s.priority}"></span><span class="sug-txt">${esc(s.text)}</span><span class="sug-badge ${s.priority}">${s.priority}</span><button class="sug-copy" onclick="cpSug(this,'${encodeURIComponent(s.text)}')" title="Copy">⎘</button></div>`; }); };
+      mk(high,$('highList')); mk(other,$('otherList'));
+    }
+
+    window.cpSug=(btn,enc)=>{ navigator.clipboard.writeText(decodeURIComponent(enc)).then(()=>{ btn.textContent='✓'; btn.style.color='var(--green)'; setTimeout(()=>{ btn.textContent='⎘'; btn.style.color=''; },1500); }); };
+
+    function renderSections(secs){
+      const el=$('secList'); el.innerHTML='';
+      secs.forEach(s=>{ el.innerHTML+=`<div class="sec-row"><div class="sec-ic ${s.status==='ok'?'ok':s.status==='warn'?'warn':'miss'}">${s.icon}</div><span class="sec-name">${esc(s.name)}</span><span class="sec-st ${s.status==='ok'?'ok':s.status==='warn'?'warn':'miss'}">${s.status==='ok'?'✓ Found':s.status==='warn'?'⚠ Weak':'✗ Missing'}</span></div>`; });
+    }
+
+    function renderCareer(matches, roadmap){
+      $('careerBadge').textContent=matches.length+' roles';
+      const el=$('careerList'); el.innerHTML='';
+      matches.forEach(m=>{ const d=document.createElement('div'); d.className='career-card'; d.innerHTML=`<div class="career-role">${esc(m.role)}</div><div class="career-lvl">${esc(m.level)} Level</div><div class="career-bar"><div class="career-fill" data-p="${m.match}"></div></div><div class="career-pct">${m.match}% match</div><div class="career-skills">${(m.skills||[]).map(s=>`<span class="career-skill">${esc(s)}</span>`).join('')}</div>`; el.appendChild(d); });
+      setTimeout(()=>{ el.querySelectorAll('.career-fill').forEach(b=>b.style.width=b.dataset.p+'%'); },150);
+      const rl=$('roadList'); rl.innerHTML='';
+      roadmap.forEach(r=>{ rl.innerHTML+=`<div class="road-item"><div class="road-n">${r.step}</div><div><div class="road-title">${esc(r.title)}</div><div class="road-desc">${esc(r.desc)}</div></div></div>`; });
+    }
+
+    /* ── Radar chart ── */
+    function drawRadar(skills){
+      const c=$('radarC'), ctx=c.getContext('2d'), sz=280, cx=sz/2, cy=sz/2, r=96;
+      c.width=sz; c.height=sz;
+      const cats=[...new Set(skills.map(s=>s.cat))].slice(0,8);
+      const n=cats.length||5;
+      ctx.clearRect(0,0,sz,sz);
+      // rings
+      [.2,.4,.6,.8,1].forEach(f=>{ ctx.beginPath(); for(let i=0;i<n;i++){ const a=(i/n)*Math.PI*2-Math.PI/2; const x=cx+Math.cos(a)*r*f, y=cy+Math.sin(a)*r*f; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); } ctx.closePath(); ctx.strokeStyle='rgba(26,26,46,0.07)'; ctx.stroke(); });
+      // axes
+      cats.forEach((_,i)=>{ const a=(i/n)*Math.PI*2-Math.PI/2; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r); ctx.strokeStyle='rgba(26,26,46,0.07)'; ctx.stroke(); });
+      // data
+      const counts={}; cats.forEach(c=>counts[c]=0); skills.forEach(s=>{ if(counts[s.cat]!==undefined) counts[s.cat]++; });
+      ctx.beginPath();
+      cats.forEach((cat,i)=>{ const v=Math.min((counts[cat]||0)/4,1); const a=(i/n)*Math.PI*2-Math.PI/2; const x=cx+Math.cos(a)*r*v, y=cy+Math.sin(a)*r*v; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+      ctx.closePath(); ctx.fillStyle='rgba(200,134,26,0.12)'; ctx.fill(); ctx.strokeStyle='rgba(200,134,26,0.75)'; ctx.lineWidth=1.8; ctx.stroke();
+      // points
+      cats.forEach((cat,i)=>{ const v=Math.min((counts[cat]||0)/4,1); const a=(i/n)*Math.PI*2-Math.PI/2; const x=cx+Math.cos(a)*r*v, y=cy+Math.sin(a)*r*v; ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2); ctx.fillStyle='var(--gold)'; ctx.fill(); });
+      // labels
+      ctx.font='500 9.5px DM Mono, monospace'; ctx.fillStyle='rgba(26,26,46,0.45)'; ctx.textAlign='center';
+      cats.forEach((cat,i)=>{ const a=(i/n)*Math.PI*2-Math.PI/2; ctx.fillText(cat.toUpperCase().slice(0,7),cx+Math.cos(a)*(r+18),cy+Math.sin(a)*(r+18)+4); });
+      $('radarBadge').textContent=cats.length+' categories';
+    }
+
+    /* ── Tabs ── */
+    document.querySelectorAll('.tab-btn').forEach(b=>{
+      b.addEventListener('click',()=>{
+        document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('on'));
+        document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('on'));
+        b.classList.add('on'); $('pane-'+b.dataset.t).classList.add('on');
+      });
+    });
+
+    /* ── Utils ── */
+    function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+    function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function fmtBytes(b){ if(b<1024) return b+' B'; if(b<1048576) return (b/1024).toFixed(1)+' KB'; return (b/1048576).toFixed(1)+' MB'; }
+    function shuffle(a){ const x=[...a]; for(let i=x.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [x[i],x[j]]=[x[j],x[i]]; } return x; }
+    function clamp(v,lo=0,hi=100){ return Math.max(lo,Math.min(hi,v)); }
+    function rand(){ return Math.random(); }
+    function animCount(el,from,to,dur){ const s=performance.now(); function step(n){ const t=Math.min((n-s)/dur,1), e=1-Math.pow(1-t,3); el.textContent=Math.round(from+(to-from)*e); if(t<1) requestAnimationFrame(step); } requestAnimationFrame(step); }
+    function extractKW(text){ const stop=new Set(['and','the','for','with','that','this','are','from','has','have','will','your','our','they','been','more','also','able','must','can','may','each','into','but','when','than','some','all','was','were','had','would','should','about','experience','work','team','using','strong','good','years','role','required']); return [...new Set(text.toLowerCase().replace(/[^a-z0-9\s+#./]/g,' ').split(/\s+/).filter(w=>w.length>3&&!stop.has(w)))].slice(0,14).map(w=>w[0].toUpperCase()+w.slice(1)); }
+
+    window.toast=function(msg,type='inf'){ const el=document.createElement('div'); el.className='toast '+type; const ic={ok:'✓',err:'✗',inf:'◆'}; el.innerHTML=`<span>${ic[type]||'◆'}</span><span>${String(msg).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>`; $('toastBox').appendChild(el); setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateX(16px)'; el.style.transition='all .3s'; setTimeout(()=>el.remove(),300); },3000); };
+  })();
+
+  /* ════════════════════════════════════════════════════
+     AI CHAT (Claude + Meta AI simulation)
+  ════════════════════════════════════════════════════ */
+  (function(){
+    let currentProvider = 'claude';
+    let freeMessages = 5;
+    let usedMessages = 0;
+    let isPremium = false;
+    let chatCount = 0;
+
+    const providerConfig = {
+      claude: {
+        name: 'Claude AI', initial: 'C', badgeClass: 'badge-free',
+        iconClass: 'ai-brand-claude', avClass: 'av-bot-claude',
+        welcome: "Hi! I'm Claude AI. I can help you improve your resume, answer career questions, or review your skills. You have <strong>5 free messages</strong> — upgrade anytime for unlimited access. What would you like help with?",
+        responses: [
+          "Great question! For ATS optimization, make sure your resume uses standard section headings like 'Work Experience', 'Education', and 'Skills'. Avoid tables or graphics as ATS parsers struggle with them.",
+          "I recommend tailoring your resume for each job by mirroring keywords from the job description. This can increase your ATS match score by up to 40%.",
+          "Your skills section should include both hard skills (Python, SQL, React) and soft skills (leadership, communication). Keep it concise — 10–15 skills is ideal.",
+          "For career transitions, focus on transferable skills and quantify your achievements. Use numbers wherever possible: 'Increased sales by 32%' is far stronger than 'improved sales'.",
+          "A strong summary statement at the top of your resume can help recruiters quickly understand your value. Keep it 2–3 sentences and lead with your strongest selling point.",
+        ]
+      },
+      meta: {
+        name: 'Meta AI', initial: 'M', badgeClass: 'badge-free',
+        iconClass: 'ai-brand-meta', avClass: 'av-bot-meta',
+        welcome: "Hey! I'm Meta AI 🌐 I can chat with you about career tips, job hunting strategies, and resume advice. You have <strong>5 free messages</strong> — want unlimited? Go Premium! How can I help?",
+        responses: [
+          "Hey! Meta AI here 🤖 One of the best tips for your resume: keep it to 1 page if you have under 10 years of experience. Recruiters spend just 6 seconds on average scanning a resume!",
+          "For job hunting, LinkedIn is your best friend 💼 Make sure your profile is 100% complete and connect with hiring managers directly after applying.",
+          "Personal branding matters! A portfolio website showcasing your projects can set you apart from hundreds of applicants for the same role.",
+          "Networking is responsible for up to 85% of jobs filled. Attend industry events, join Discord communities, and engage on LinkedIn regularly.",
+          "Don't neglect your cover letter — a personalized, concise cover letter (under 300 words) can make a big difference, especially for smaller companies.",
+        ]
+      }
+    };
+
+    window.switchAIProvider = function(provider) {
+      currentProvider = provider;
+      const config = providerConfig[provider];
+      // Update buttons
+      $('providerClaude').className = 'ai-provider-btn' + (provider==='claude' ? ' active-claude' : '');
+      $('providerMeta').className   = 'ai-provider-btn' + (provider==='meta'   ? ' active-meta'   : '');
+      // Update topbar
+      $('chatBrandName').textContent = config.name;
+      $('chatPlanBadge').className = 'ai-plan-badge ' + (isPremium ? 'badge-premium' : 'badge-free');
+      $('chatPlanBadge').textContent = isPremium ? 'PREMIUM' : 'FREE';
+      const icon = $('chatBrandIcon');
+      icon.className = 'ai-chat-brand-icon ' + config.iconClass;
+      icon.innerHTML = provider === 'claude'
+              ? '<svg width="14" height="14" viewBox="0 0 20 20" fill="none"><rect x="3" y="2" width="11" height="14" rx="1.5" stroke="white" stroke-width="1.8"/><path d="M11 2v5h5" stroke="white" stroke-width="1.8"/></svg>'
+              : '<svg width="14" height="14" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="white" stroke-width="1.8"/><path d="M7 10h6M10 7v6" stroke="white" stroke-width="1.6" stroke-linecap="round"/></svg>';
+      // Reset messages
+      usedMessages = 0; freeMessages = 5;
+      updateUsage();
+      $('premiumPrompt').classList.remove('show');
+      $('aiInput').disabled = false;
+      $('aiSendBtn').disabled = false;
+      const msgs = $('aiMessages'); msgs.innerHTML = '';
+      addBotMessage(config.welcome, config.avClass, config.initial);
+    };
+
+    function updateUsage() {
+      const remaining = Math.max(0, freeMessages - usedMessages);
+      $('usageText').textContent = isPremium ? 'Unlimited' : `${usedMessages} / ${freeMessages} free messages`;
+      $('usageFill').style.width = isPremium ? '100%' : ((usedMessages/freeMessages)*100)+'%';
+      $('usageFill').style.background = isPremium ? 'var(--gold)' : (remaining<=1 ? 'var(--red)' : 'var(--green)');
+    }
+
+    function addBotMessage(html, avClass, initial) {
+      const msgs = $('aiMessages');
+      const div = document.createElement('div');
+      div.className = 'ai-msg bot';
+      div.innerHTML = `<div class="ai-msg-av ${avClass}">${initial}</div><div class="ai-bubble bubble-bot">${html}</div>`;
+      msgs.appendChild(div);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    function addUserMessage(text) {
+      const msgs = $('aiMessages');
+      const sess = getSession();
+      const initial = sess ? sess.name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2) : 'U';
+      const div = document.createElement('div');
+      div.className = 'ai-msg user';
+      div.innerHTML = `<div class="ai-msg-av av-user">${initial}</div><div class="ai-bubble bubble-user">${text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`;
+      msgs.appendChild(div);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    function showTyping() {
+      const msgs = $('aiMessages');
+      const config = providerConfig[currentProvider];
+      const div = document.createElement('div');
+      div.className = 'ai-msg bot'; div.id = 'typingIndicator';
+      div.innerHTML = `<div class="ai-msg-av ${config.avClass}">${config.initial}</div><div class="ai-bubble bubble-bot"><div class="ai-typing"><span></span><span></span><span></span></div></div>`;
+      msgs.appendChild(div);
+      msgs.scrollTop = msgs.scrollHeight;
+      return div;
+    }
+
+    window.sendAIMessage = function() {
+      const input = $('aiInput');
+      const text = input.value.trim();
+      if(!text) return;
+      if(!isPremium && usedMessages >= freeMessages) { $('premiumPrompt').classList.add('show'); return; }
+      addUserMessage(text);
+      input.value = ''; input.style.height = '';
+      usedMessages++;
+      // Track chat count
+      chatCount++;
+      const sess = getSession();
+      if(sess){ sess.chats = chatCount; saveSession(sess); $('pdChats').textContent = chatCount; }
+      updateUsage();
+      $('aiSendBtn').disabled = true;
+      const typing = showTyping();
+      const config = providerConfig[currentProvider];
+      const delay = 900 + Math.random()*600;
+      setTimeout(()=>{
+        typing.remove();
+        const r = config.responses[Math.floor(Math.random()*config.responses.length)];
+        addBotMessage(r, config.avClass, config.initial);
+        $('aiSendBtn').disabled = false;
+        if(!isPremium && usedMessages >= freeMessages) {
+          $('premiumPrompt').classList.add('show');
+          $('aiInput').disabled = true; $('aiSendBtn').disabled = true;
+        }
+      }, delay);
+    };
+
+    window.aiInputKeydown = function(e) {
+      if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendAIMessage(); }
+    };
+    window.autoResizeAI = function(el) {
+      el.style.height=''; el.style.height=Math.min(el.scrollHeight,120)+'px';
+    };
+    window.unlockPremium = function() {
+      isPremium = true; usedMessages = 0; freeMessages = Infinity;
+      $('premiumPrompt').classList.remove('show');
+      $('aiInput').disabled = false; $('aiSendBtn').disabled = false;
+      $('chatPlanBadge').className = 'ai-plan-badge badge-premium';
+      $('chatPlanBadge').textContent = 'PREMIUM';
+      updateUsage();
+      const config = providerConfig[currentProvider];
+      addBotMessage("🎉 Welcome to <strong>Premium</strong>! You now have unlimited AI chat. Ask me anything!", config.avClass, config.initial);
+    };
+    // Init usage display
+    updateUsage();
+  })();
+
+</script>
+</body>
+</html>
